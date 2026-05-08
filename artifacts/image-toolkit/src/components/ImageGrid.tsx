@@ -18,8 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ImageCard } from './ImageCard';
 import { ImageItem } from '../lib/types';
 import { useImageStore } from '../hooks/use-image-store';
-import { Empty } from './ui/empty';
-import { ImageIcon } from 'lucide-react';
+import { useBackgroundRemoval } from '../hooks/use-background-removal';
 
 interface ImageGridProps {
   items: ImageItem[];
@@ -27,6 +26,7 @@ interface ImageGridProps {
 
 export function ImageGrid({ items }: ImageGridProps) {
   const { reorderItems, removeItem } = useImageStore();
+  const { removeBackground } = useBackgroundRemoval();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -51,12 +51,20 @@ export function ImageGrid({ items }: ImageGridProps) {
     const url = URL.createObjectURL(item.processedBlob);
     const a = document.createElement('a');
     a.href = url;
-    
-    // Construct filename
     const ext = item.processedBlob.type.split('/')[1] || 'jpg';
-    const nameWithoutExt = item.file.name.replace(/\.[^/.]+$/, "");
+    const nameWithoutExt = item.file.name.replace(/\.[^/.]+$/, '');
     a.download = `${nameWithoutExt}-processed.${ext === 'jpeg' ? 'jpg' : ext}`;
-    
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadBgRemoved = (item: ImageItem) => {
+    if (!item.bgRemovedBlob) return;
+    const url = URL.createObjectURL(item.bgRemovedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    const nameWithoutExt = item.file.name.replace(/\.[^/.]+$/, '');
+    a.download = `${nameWithoutExt}-no-bg.png`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -91,6 +99,8 @@ export function ImageGrid({ items }: ImageGridProps) {
                     item={item}
                     onRemove={removeItem}
                     onDownload={handleDownload}
+                    onRemoveBackground={removeBackground}
+                    onDownloadBgRemoved={handleDownloadBgRemoved}
                   />
                 </motion.div>
               ))}

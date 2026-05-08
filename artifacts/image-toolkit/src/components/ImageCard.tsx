@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ImageItem } from '../lib/types';
-import { X, GripVertical, CheckCircle2, Download, AlertCircle, Loader2 } from 'lucide-react';
+import { X, GripVertical, CheckCircle2, Download, AlertCircle, Loader2, Eraser, Layers } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
@@ -11,6 +11,8 @@ interface ImageCardProps {
   item: ImageItem;
   onRemove: (id: string) => void;
   onDownload?: (item: ImageItem) => void;
+  onRemoveBackground?: (item: ImageItem) => void;
+  onDownloadBgRemoved?: (item: ImageItem) => void;
 }
 
 function formatBytes(bytes: number, decimals = 2) {
@@ -22,7 +24,8 @@ function formatBytes(bytes: number, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-export function ImageCard({ item, onRemove, onDownload }: ImageCardProps) {
+export function ImageCard({ item, onRemove, onDownload, onRemoveBackground, onDownloadBgRemoved }: ImageCardProps) {
+  const [showBgRemoved, setShowBgRemoved] = useState(false);
   const {
     attributes,
     listeners,
@@ -43,16 +46,19 @@ export function ImageCard({ item, onRemove, onDownload }: ImageCardProps) {
     const diff = item.originalSize - item.processedSize;
     const percent = ((diff / item.originalSize) * 100).toFixed(0);
     const isSmaller = diff > 0;
-    
     return {
       diff,
       percent,
       isSmaller,
-      text: isSmaller ? `-${percent}%` : `+${Math.abs(Number(percent))}%`
+      text: isSmaller ? `-${percent}%` : `+${Math.abs(Number(percent))}%`,
     };
   };
 
   const savings = getSavings();
+  const hasBgRemoved = item.bgRemovalStatus === 'done' && item.bgRemovedUrl;
+  const bgRemoving = item.bgRemovalStatus === 'processing';
+
+  const previewUrl = showBgRemoved && hasBgRemoved ? item.bgRemovedUrl! : item.previewUrl;
 
   return (
     <div
@@ -63,7 +69,7 @@ export function ImageCard({ item, onRemove, onDownload }: ImageCardProps) {
       }`}
       data-testid={`image-card-${item.id}`}
     >
-      {/* Drag handle & Actions overlay */}
+      {/* Drag handle & Remove overlay */}
       <div className="absolute top-2 right-2 flex items-center gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="destructive"
@@ -87,29 +93,61 @@ export function ImageCard({ item, onRemove, onDownload }: ImageCardProps) {
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
 
+      {/* Toggle preview button when bg removed is available */}
+      {hasBgRemoved && (
+        <button
+          className="absolute top-2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-md px-2 py-1 text-[10px] font-medium text-foreground flex items-center gap-1"
+          onClick={() => setShowBgRemoved((v) => !v)}
+          data-testid={`btn-toggle-preview-${item.id}`}
+        >
+          <Layers className="h-3 w-3" />
+          {showBgRemoved ? 'Original' : 'No BG'}
+        </button>
+      )}
+
       {/* Image Preview */}
-      <div className="relative aspect-square w-full bg-muted overflow-hidden flex items-center justify-center">
+      <div
+        className="relative aspect-square w-full overflow-hidden flex items-center justify-center"
+        style={
+          showBgRemoved && hasBgRemoved
+            ? {
+                backgroundImage:
+                  'repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 0 0 / 16px 16px',
+                backgroundColor: '#fff',
+              }
+            : { backgroundColor: 'hsl(var(--muted))' }
+        }
+      >
         <img
-          src={item.previewUrl}
+          src={previewUrl}
           alt={item.file.name}
           className="object-contain w-full h-full"
         />
-        
-        {/* Status Overlays */}
-        {item.status === 'processing' && (
+
+        {/* Processing overlays */}
+        {(item.status === 'processing' || bgRemoving) && (
           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
             <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <Progress value={undefined} className="w-1/2 h-2" />
+            <p className="text-xs text-muted-foreground font-medium">
+              {bgRemoving ? 'Removing background...' : 'Processing...'}
+            </p>
+            <Progress value={undefined} className="w-1/2 h-1.5" />
           </div>
         )}
-        
-        {item.status === 'done' && (
+
+        {item.status === 'done' && !bgRemoving && (
           <div className="absolute inset-0 bg-success/10 pointer-events-none" />
         )}
-        
+
         {item.status === 'error' && (
           <div className="absolute inset-0 bg-destructive/10 flex items-center justify-center pointer-events-none">
             <AlertCircle className="h-10 w-10 text-destructive opacity-50" />
+          </div>
+        )}
+
+        {item.bgRemovalStatus === 'error' && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
+            <Badge variant="destructive" className="text-[10px]">BG removal failed</Badge>
           </div>
         )}
       </div>
@@ -138,7 +176,7 @@ export function ImageCard({ item, onRemove, onDownload }: ImageCardProps) {
               </span>
               {savings && (
                 <Badge
-                  variant={savings.isSmaller ? "default" : "destructive"}
+                  variant={savings.isSmaller ? 'default' : 'destructive'}
                   className={`text-[10px] h-5 px-1.5 ${savings.isSmaller ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20' : ''}`}
                 >
                   {savings.text}
@@ -147,16 +185,55 @@ export function ImageCard({ item, onRemove, onDownload }: ImageCardProps) {
             </div>
           )}
 
+          {/* Download processed */}
           {item.status === 'done' && item.processedBlob && onDownload && (
             <Button
               variant="outline"
               size="sm"
-              className="w-full mt-2 h-8 text-xs"
+              className="w-full h-8 text-xs"
               onClick={() => onDownload(item)}
               data-testid={`btn-download-${item.id}`}
             >
-              <Download className="w-3 h-3 mr-2" />
+              <Download className="w-3 h-3 mr-1.5" />
               Download
+            </Button>
+          )}
+
+          {/* Remove background button */}
+          {onRemoveBackground && item.bgRemovalStatus !== 'done' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs border-dashed hover:border-solid hover:bg-primary/5 hover:text-primary hover:border-primary"
+              onClick={() => onRemoveBackground(item)}
+              disabled={bgRemoving || item.status === 'processing'}
+              data-testid={`btn-remove-bg-${item.id}`}
+            >
+              {bgRemoving ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                <>
+                  <Eraser className="w-3 h-3 mr-1.5" />
+                  Remove Background
+                </>
+              )}
+            </Button>
+          )}
+
+          {/* Download bg-removed PNG */}
+          {hasBgRemoved && onDownloadBgRemoved && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full h-8 text-xs"
+              onClick={() => onDownloadBgRemoved(item)}
+              data-testid={`btn-download-no-bg-${item.id}`}
+            >
+              <Download className="w-3 h-3 mr-1.5" />
+              PNG (no background)
             </Button>
           )}
         </div>

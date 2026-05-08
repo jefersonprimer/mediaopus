@@ -1,0 +1,58 @@
+Add a fully client-side AI background removal feature to the existing Image Toolkit application.
+
+The background removal system must run entirely in the user's browser without any backend, API calls, cloud processing, authentication, or image uploads. All image processing must happen locally for privacy and zero server costs.
+
+Requirements:
+
+* Use the "@imgly/background-removal" package
+* Integrate seamlessly into the existing Next.js + TypeScript + Tailwind application
+* Support removing backgrounds from uploaded images
+* Generate transparent PNG outputs
+* Allow downloading processed images individually
+* Support batch background removal for multiple images
+* Preserve high image quality
+* Show loading/progress states during AI processing
+* Prevent UI freezing during heavy processing
+* Use Web Workers if necessary for performance
+* Cache the AI model in the browser after the first download
+* Display before/after previews
+* Show estimated processing progress
+* Handle errors gracefully
+* Mobile-friendly responsive interface
+* Dark mode compatible
+* Keep the existing modern SaaS-like design language
+
+Technical Requirements:
+
+* No backend server
+* No external APIs
+* No paid services
+* No authentication
+* Fully frontend-only architecture
+* Fully static deployment compatible
+* Use browser APIs only
+* Strong TypeScript typing
+* Clean reusable architecture
+* Proper state management
+* Optimized performance for large images
+
+UI Additions:
+
+* "Remove Background" button on each image card
+* Batch "Remove Background" action
+* Transparent checkerboard preview background
+* Loading overlays while processing
+* Processing status indicators
+* Download transparent PNG button
+* Smooth animations and transitions
+
+Implementation Details:
+
+* Install and configure "@imgly/background-removal"
+* Create reusable hooks for background removal logic
+* Create utility functions for image blob handling
+* Use object URLs for previews
+* Properly revoke object URLs to avoid memory leaks
+* Keep processing fully local in the browser
+
+The implementation should be production-ready, scalable, cleanly structured, and integrated into the current project architecture.

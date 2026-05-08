@@ -10,6 +10,7 @@ interface ImageStore {
   reorderItems: (activeId: string, overId: string) => void;
   updateItem: (id: string, updates: Partial<ImageItem>) => void;
   getProcessedItems: () => { blob: Blob; name: string }[];
+  getBgRemovedItems: () => { blob: Blob; name: string }[];
 }
 
 const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
@@ -39,6 +40,9 @@ export const useImageStore = create<ImageStore>((set, get) => ({
         status: 'idle' as const,
         originalWidth: width,
         originalHeight: height,
+        bgRemovalStatus: 'idle' as const,
+        bgRemovedBlob: null,
+        bgRemovedUrl: null,
       };
     });
     const newItems = await Promise.all(newItemsP);
@@ -47,12 +51,18 @@ export const useImageStore = create<ImageStore>((set, get) => ({
   removeItem: (id: string) =>
     set((state) => {
       const item = state.items.find((i) => i.id === id);
-      if (item) URL.revokeObjectURL(item.previewUrl);
+      if (item) {
+        URL.revokeObjectURL(item.previewUrl);
+        if (item.bgRemovedUrl) URL.revokeObjectURL(item.bgRemovedUrl);
+      }
       return { items: state.items.filter((i) => i.id !== id) };
     }),
   clearItems: () =>
     set((state) => {
-      state.items.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+      state.items.forEach((item) => {
+        URL.revokeObjectURL(item.previewUrl);
+        if (item.bgRemovedUrl) URL.revokeObjectURL(item.bgRemovedUrl);
+      });
       return { items: [] };
     }),
   reorderItems: (activeId: string, overId: string) =>
@@ -71,10 +81,22 @@ export const useImageStore = create<ImageStore>((set, get) => ({
       .filter((i) => i.status === 'done' && i.processedBlob)
       .map((i) => {
         const ext = i.processedBlob!.type.split('/')[1] || 'jpg';
-        const nameWithoutExt = i.file.name.replace(/\.[^/.]+$/, "");
+        const nameWithoutExt = i.file.name.replace(/\.[^/.]+$/, '');
         return {
           blob: i.processedBlob!,
           name: `${nameWithoutExt}-processed.${ext === 'jpeg' ? 'jpg' : ext}`,
+        };
+      });
+  },
+  getBgRemovedItems: () => {
+    const { items } = get();
+    return items
+      .filter((i) => i.bgRemovalStatus === 'done' && i.bgRemovedBlob)
+      .map((i) => {
+        const nameWithoutExt = i.file.name.replace(/\.[^/.]+$/, '');
+        return {
+          blob: i.bgRemovedBlob!,
+          name: `${nameWithoutExt}-no-bg.png`,
         };
       });
   },

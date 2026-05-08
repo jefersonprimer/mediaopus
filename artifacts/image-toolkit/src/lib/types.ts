@@ -8,6 +8,9 @@ export interface ImageItem {
   status: 'idle' | 'processing' | 'done' | 'error';
   originalWidth: number;
   originalHeight: number;
+  bgRemovalStatus: 'idle' | 'processing' | 'done' | 'error';
+  bgRemovedBlob: Blob | null;
+  bgRemovedUrl: string | null;
 }
 
 export interface ProcessOptions {
