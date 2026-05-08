@@ -279,11 +279,11 @@ export function ImageCard({
 
           {/* Solid BG removal quick actions */}
           {onRemoveSolidBg && solidBgOpts && item.solidBgStatus !== 'done' && (
-            <div className="flex gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 h-8 text-xs border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400"
+                className="flex-1 min-w-[60px] h-8 text-[10px] border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-1"
                 onClick={() => onRemoveSolidBg(item, { ...solidBgOpts, targetColor: PRESET_WHITE })}
                 disabled={isBusy}
                 data-testid={`btn-remove-solid-white-${item.id}`}
@@ -298,7 +298,7 @@ export function ImageCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 h-8 text-xs border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400"
+                className="flex-1 min-w-[60px] h-8 text-[10px] border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-1"
                 onClick={() => onRemoveSolidBg(item, { ...solidBgOpts, targetColor: PRESET_BLACK })}
                 disabled={isBusy}
                 data-testid={`btn-remove-solid-black-${item.id}`}
@@ -309,7 +309,7 @@ export function ImageCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-2"
+                className="h-8 text-[10px] border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-2"
                 onClick={() => onRemoveSolidBg(item, solidBgOpts)}
                 disabled={isBusy}
                 data-testid={`btn-remove-solid-custom-${item.id}`}

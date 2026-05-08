@@ -13,8 +13,13 @@ export function useImageProcessing() {
 
   const processImage = async (item: ImageItem, opts: ProcessOptions): Promise<Blob> => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
+    const loadPromise = new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('Failed to load image for processing'));
+    });
     img.src = item.previewUrl;
-    await new Promise((resolve) => { img.onload = resolve; });
+    await loadPromise;
 
     let w = opts.width || img.naturalWidth;
     let h = opts.height || img.naturalHeight;
