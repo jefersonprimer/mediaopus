@@ -1,36 +1,44 @@
-# [Project name]
+# Image Toolkit
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A browser-native image processing tool — resize, compress, and convert images entirely client-side. No uploads, no backend, fully private and fast.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/image-toolkit run dev` — run the frontend (port auto-assigned)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React + Vite, Tailwind CSS, shadcn/ui
+- Image processing: pica (resize), Canvas API (compress/convert), JSZip (ZIP export)
+- Drag-and-drop: react-dropzone (upload), @dnd-kit (reorder)
+- State: Zustand
+- Theming: next-themes (dark/light mode)
+- Animations: framer-motion
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/image-toolkit/src/` — frontend source
+  - `src/pages/Home.tsx` — main single-page layout
+  - `src/components/UploadZone.tsx` — drag-and-drop upload area
+  - `src/components/ImageGrid.tsx` — image card grid with DnD reordering
+  - `src/components/ControlsPanel.tsx` — processing options sidebar
+  - `src/hooks/use-image-store.ts` — Zustand store for image state
+  - `src/hooks/use-image-processing.ts` — pica + Canvas API processing logic
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Fully client-side: all processing uses Canvas API + pica, no server needed
+- Metadata removal is automatic — Canvas toBlob() strips EXIF data on export
+- Zustand used for simple, flat global state (image list + processing options)
+- pica used for high-quality Lanczos resizing instead of canvas drawImage scaling
+- JSZip bundles all processed images into a downloadable archive
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Users can drag-and-drop multiple images, configure resize dimensions (with aspect ratio lock), compression quality (0–100%), and output format (WEBP/JPG/PNG). Processing runs in batch via pica + Canvas API. Images can be downloaded individually or all at once as a ZIP. Dark mode supported with system preference detection.
 
 ## User preferences
 
@@ -38,7 +46,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Zustand must be added to `artifacts/image-toolkit` dependencies (not root)
+- All image processing libraries (pica, jszip, react-dropzone, @dnd-kit) are in artifact-level devDependencies
+- No backend or DATABASE_URL needed — this is a fully static frontend
 
 ## Pointers
 
