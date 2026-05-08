@@ -2,15 +2,17 @@ import { AssetDef } from './asset-definitions';
 
 export interface BgConfig {
   type: 'solid' | 'gradient';
-  color: string;           // hex
-  gradientEnd?: string;    // hex, used when type = 'gradient'
-  gradientAngle?: number;  // degrees (0 = top→bottom)
+  color: string;
+  gradientEnd?: string;
+  gradientAngle?: number;
 }
 
 export interface GenerateOptions {
-  foregroundScale: number; // 0.1–1.0
+  foregroundScale: number;        // 0.1–1.0
   bg: BgConfig;
-  cornerRadius: number;    // 0–50 (percent of smallest dimension)
+  cornerRadius: number;           // 0–50 (percent of smallest dimension)
+  bgRemoveThreshold: number;      // 0–100: euclidean distance to consider "background"
+  monochromeColor: 'white' | 'black';
 }
 
 export interface GeneratedAsset {
@@ -19,13 +21,7 @@ export interface GeneratedAsset {
   previewUrl: string;
 }
 
-function hexToRgba(hex: string, alpha = 1): string {
-  const c = hex.replace('#', '');
-  const r = parseInt(c.substring(0, 2), 16);
-  const g = parseInt(c.substring(2, 4), 16);
-  const b = parseInt(c.substring(4, 6), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function makeGradient(
   ctx: CanvasRenderingContext2D,
@@ -69,22 +65,98 @@ function applyRoundedClip(
   ctx.clip();
 }
 
-function toMonochrome(ctx: CanvasRenderingContext2D, w: number, h: number) {
+/**
+ * Sample corner pixels to detect the dominant background colour.
+ * Falls back to white if all corners are fully transparent.
+ */
+function detectBgColor(
+  data: Uint8ClampedArray,
+  w: number,
+  h: number
+): [number, number, number] {
+  const stride = 4;
+  const corners = [
+    0,                            // top-left
+    (w - 1) * stride,             // top-right
+    (h - 1) * w * stride,        // bottom-left
+    ((h - 1) * w + (w - 1)) * stride, // bottom-right
+  ];
+  let r = 0, g = 0, b = 0, count = 0;
+  for (const idx of corners) {
+    if (data[idx + 3] > 128) {
+      r += data[idx];
+      g += data[idx + 1];
+      b += data[idx + 2];
+      count++;
+    }
+  }
+  if (count === 0) return [255, 255, 255];
+  return [Math.round(r / count), Math.round(g / count), Math.round(b / count)];
+}
+
+/**
+ * Remove a solid/near-solid background from an image drawn on a canvas.
+ * Samples corners to auto-detect the background colour then zeroes out
+ * pixels within `threshold` Euclidean distance, with a soft fade zone.
+ */
+function removeSolidBackground(
+  srcCanvas: HTMLCanvasElement,
+  threshold: number          // 0–255 euclidean distance
+): HTMLCanvasElement {
+  const w = srcCanvas.width;
+  const h = srcCanvas.height;
+  const ctx = srcCanvas.getContext('2d', { willReadFrequently: true })!;
   const imageData = ctx.getImageData(0, 0, w, h);
   const data = imageData.data;
+
+  const [bgR, bgG, bgB] = detectBgColor(data, w, h);
+  const softZone = Math.max(threshold * 0.4, 8); // fade region width
+
   for (let i = 0; i < data.length; i += 4) {
-    const a = data[i + 3];
-    if (a > 0) {
-      // Make fully white where alpha > 0, preserve alpha
-      data[i] = 255;
-      data[i + 1] = 255;
-      data[i + 2] = 255;
+    if (data[i + 3] === 0) continue;
+    const dr = data[i] - bgR;
+    const dg = data[i + 1] - bgG;
+    const db = data[i + 2] - bgB;
+    const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+    if (dist <= threshold) {
+      data[i + 3] = 0;
+    } else if (dist <= threshold + softZone) {
+      const ratio = (dist - threshold) / softZone;
+      data[i + 3] = Math.round(data[i + 3] * ratio);
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+  return srcCanvas;
+}
+
+/**
+ * Convert all non-transparent pixels to a single solid colour while
+ * preserving the existing alpha channel (including anti-aliased edges).
+ */
+function applyMonochrome(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  color: 'white' | 'black'
+) {
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  const [tr, tg, tb] = color === 'white' ? [255, 255, 255] : [0, 0, 0];
+
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] > 0) {
+      data[i] = tr;
+      data[i + 1] = tg;
+      data[i + 2] = tb;
+      // alpha kept as-is — anti-aliased edges stay smooth
     }
   }
   ctx.putImageData(imageData, 0, 0);
 }
 
-async function loadImage(file: File): Promise<HTMLImageElement> {
+async function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -103,6 +175,29 @@ async function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   });
 }
 
+/**
+ * Draw the source image onto a full-resolution offscreen canvas,
+ * optionally strip its background, and return the resulting canvas.
+ * This preprocessed canvas is then used as the draw source.
+ */
+function preprocessSource(
+  img: HTMLImageElement,
+  doRemoveBg: boolean,
+  threshold: number
+): HTMLCanvasElement {
+  const tmp = document.createElement('canvas');
+  tmp.width = img.naturalWidth;
+  tmp.height = img.naturalHeight;
+  const tCtx = tmp.getContext('2d', { willReadFrequently: doRemoveBg })!;
+  tCtx.drawImage(img, 0, 0);
+  if (doRemoveBg) {
+    removeSolidBackground(tmp, threshold);
+  }
+  return tmp;
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
+
 export async function generateAsset(
   img: HTMLImageElement,
   def: AssetDef,
@@ -110,13 +205,18 @@ export async function generateAsset(
 ): Promise<GeneratedAsset> {
   const { width: W, height: H } = def;
 
+  // Pre-process source: strip background if this asset type needs it
+  const srcCanvas = preprocessSource(img, def.removeBackground === true, opts.bgRemoveThreshold);
+
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
-  const ctx = canvas.getContext('2d', { willReadFrequently: def.monochrome })!;
+  const ctx = canvas.getContext('2d', { willReadFrequently: !!(def.monochrome) })!;
 
-  // Apply rounded clip if needed
-  applyRoundedClip(ctx, W, H, opts.cornerRadius);
+  // Rounded clip — skipped for noCornerRadius assets (android bg layer)
+  if (!def.noCornerRadius) {
+    applyRoundedClip(ctx, W, H, opts.cornerRadius);
+  }
 
   // Background fill
   if (def.bgFill) {
@@ -124,14 +224,13 @@ export async function generateAsset(
     ctx.fillRect(0, 0, W, H);
   }
 
-  // Logo / foreground
+  // Foreground logo
   if (def.foregroundScale > 0) {
     const effectiveScale = def.foregroundScale * opts.foregroundScale;
     const availW = W * effectiveScale;
     const availH = H * effectiveScale;
 
-    // Fit logo inside available box preserving aspect ratio
-    const srcRatio = img.naturalWidth / img.naturalHeight;
+    const srcRatio = srcCanvas.width / srcCanvas.height;
     let dw: number, dh: number;
     if (srcRatio >= 1) {
       dw = availW;
@@ -144,12 +243,12 @@ export async function generateAsset(
     const dx = (W - dw) / 2;
     const dy = (H - dh) / 2;
 
-    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.drawImage(srcCanvas, dx, dy, dw, dh);
   }
 
-  // Monochrome post-process
+  // Monochrome post-process — preserves alpha, changes colour only
   if (def.monochrome) {
-    toMonochrome(ctx, W, H);
+    applyMonochrome(ctx, W, H, opts.monochromeColor);
   }
 
   const blob = await canvasToBlob(canvas);
@@ -164,7 +263,7 @@ export async function generateAllAssets(
   opts: GenerateOptions,
   onProgress?: (completed: number, total: number) => void
 ): Promise<GeneratedAsset[]> {
-  const img = await loadImage(file);
+  const img = await loadImageFromFile(file);
   const results: GeneratedAsset[] = [];
 
   for (let i = 0; i < defs.length; i++) {

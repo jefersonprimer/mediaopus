@@ -1,0 +1,90 @@
+Fix and improve the mobile asset generator implementation with the following corrections and behavior changes.
+
+Bug Fixes and Required Changes:
+
+1. android-icon-background.png
+
+* Remove all rounded corners
+* The generated image must be a plain solid square background
+* No border radius
+* No masking
+* No clipping
+* Output must be exactly 512x512
+* Allow configurable solid background color
+* Preserve clean flat design
+
+2. android-icon-foreground.png
+   Current behavior is incorrect.
+
+The current implementation simply scales the entire uploaded image into a transparent canvas. This is NOT the expected behavior.
+
+Correct behavior:
+
+* Automatically remove the image background first
+* Detect and remove white, black, or near-solid backgrounds
+* Preserve only the foreground artwork/logo
+* Export transparent PNG
+* Keep the artwork centered
+* Preserve transparency
+* Maintain sharp edges and anti-aliasing
+* Output must be exactly 512x512
+* Do NOT place the original image inside another transparent image without processing
+* The artwork should naturally occupy the safe area without unnecessary padding
+
+The same correction must also be applied to:
+
+* splash-icon.png (1024x1024)
+
+3. android-icon-monochrome.png
+   Current behavior is incorrect.
+
+Correct behavior:
+
+* Remove background completely
+* Preserve transparency
+* Convert the foreground artwork into a fully monochrome version
+* Convert all visible pixels to solid black or solid white
+* Preserve anti-aliased edges using alpha transparency
+* Do NOT preserve original colors
+* Do NOT flatten transparency
+* Output must be exactly 432x432
+* Result should follow Android monochrome adaptive icon guidelines
+
+Implementation Requirements:
+
+* Use Canvas API pixel manipulation
+* Use RGBA pixel analysis
+* Preserve alpha transparency correctly
+* Preserve smooth anti-aliased borders
+* Remove solid/near-solid backgrounds using configurable threshold detection
+* Avoid jagged edges
+* Maintain high-quality output
+
+Foreground Processing Requirements:
+
+* Detect background colors automatically
+* Prioritize white and black background detection
+* Support near-white and near-black backgrounds
+* Preserve internal transparent holes/shapes inside logos
+* Center processed artwork correctly
+* Scale artwork proportionally
+
+Monochrome Conversion Requirements:
+
+* Convert all non-transparent pixels into a single solid monochrome color
+* Preserve original alpha values
+* Preserve smooth transparent edge fading
+* Allow monochrome export in black or white
+
+UI Improvements:
+
+* Add preview comparison:
+
+  * Original
+  * Foreground Removed
+  * Monochrome
+* Add threshold/sensitivity slider
+* Add monochrome color selector (black/white)
+* Add live preview updates
+
+The implementation should behave similarly to professional mobile app asset generation workflows used for Android adaptive icons and Expo applications.

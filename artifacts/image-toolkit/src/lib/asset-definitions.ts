@@ -7,9 +7,11 @@ export interface AssetDef {
   filename: string;
   width: number;
   height: number;
-  bgFill: boolean;       // whether to paint a background
-  foregroundScale: number; // multiplier relative to the panel foregroundScale (1 = use it directly)
+  bgFill: boolean;
+  foregroundScale: number;
   monochrome?: boolean;
+  removeBackground?: boolean;  // auto-detect + strip bg before drawing
+  noCornerRadius?: boolean;    // always render as a flat square (e.g. android bg layer)
   description: string;
 }
 
@@ -35,6 +37,7 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 1024,
     bgFill: false,
     foregroundScale: 0.6,
+    removeBackground: true,
     description: '1024×1024 transparent — foreground layer for adaptive icons',
   },
   {
@@ -46,6 +49,7 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 1024,
     bgFill: false,
     foregroundScale: 0.5,
+    removeBackground: true,
     description: '1024×1024 transparent — centered logo for splash screen',
   },
 
@@ -59,7 +63,8 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 512,
     bgFill: false,
     foregroundScale: 0.66,
-    description: '512×512 transparent — adaptive icon foreground',
+    removeBackground: true,
+    description: '512×512 transparent — adaptive icon foreground (bg stripped)',
   },
   {
     id: 'android-background',
@@ -69,8 +74,9 @@ export const ASSET_DEFS: AssetDef[] = [
     width: 512,
     height: 512,
     bgFill: true,
-    foregroundScale: 0,      // bg only — no logo
-    description: '512×512 — solid/gradient background for adaptive icon',
+    foregroundScale: 0,
+    noCornerRadius: true,       // must be a flat square — no masking
+    description: '512×512 flat square — solid/gradient background for adaptive icon',
   },
   {
     id: 'android-monochrome',
@@ -81,8 +87,9 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 432,
     bgFill: false,
     foregroundScale: 0.7,
+    removeBackground: true,
     monochrome: true,
-    description: '432×432 transparent — Android 13+ themed icon',
+    description: '432×432 transparent — Android 13+ themed icon, bg stripped then monochrome',
   },
   {
     id: 'android-notification',
@@ -93,8 +100,9 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 96,
     bgFill: false,
     foregroundScale: 0.7,
+    removeBackground: true,
     monochrome: true,
-    description: '96×96 white monochrome — notification icon',
+    description: '96×96 white monochrome transparent — notification icon',
   },
   {
     id: 'android-play-store',

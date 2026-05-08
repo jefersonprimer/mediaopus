@@ -2,18 +2,16 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAssetGenerator } from '../hooks/use-asset-generator';
-import { ASSET_DEFS, PLATFORM_LABELS, PLATFORM_COLORS, Platform } from '../lib/asset-definitions';
+import { ASSET_DEFS, PLATFORM_LABELS, Platform } from '../lib/asset-definitions';
 import { GeneratedAsset } from '../lib/generate-assets';
 import { Header } from '../components/Header';
 import { Button } from '../components/ui/button';
 import { Slider } from '../components/ui/slider';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
-import { Switch } from '../components/ui/switch';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Separator } from '../components/ui/separator';
-import { ScrollArea } from '../components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
   Upload,
@@ -27,6 +25,7 @@ import {
   FileJson,
   ChevronDown,
   ChevronUp,
+  Eraser,
 } from 'lucide-react';
 
 const PLATFORMS: Platform[] = ['expo', 'android', 'ios', 'pwa'];
@@ -50,6 +49,8 @@ export default function AssetGenerator() {
     setForegroundScale,
     setBg,
     setCornerRadius,
+    setBgRemoveThreshold,
+    setMonochromeColor,
     togglePlatform,
     generate,
     downloadAsset,
@@ -215,8 +216,71 @@ export default function AssetGenerator() {
                     data-testid="slider-corner-radius"
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    0 = square, 50 = circle. iOS clips icons automatically so this mainly affects previews.
+                    0 = square, 50 = circle. Android background layer is always a flat square regardless of this setting.
                   </p>
+                </div>
+
+                <Separator />
+
+                {/* Foreground extraction */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Eraser className="w-4 h-4 text-primary" />
+                    <Label className="text-sm font-semibold">Foreground Extraction</Label>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    Applied to transparent assets (foreground layer, monochrome icon, splash icon). Auto-detects the background colour from image corners and strips it.
+                  </p>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-muted-foreground">Removal Threshold</Label>
+                      <span className="text-xs font-mono text-muted-foreground">{state.bgRemoveThreshold}</span>
+                    </div>
+                    <Slider
+                      value={[state.bgRemoveThreshold]}
+                      onValueChange={([v]) => setBgRemoveThreshold(v)}
+                      min={0}
+                      max={120}
+                      step={1}
+                      data-testid="slider-bg-threshold"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>Conservative</span>
+                      <span>Aggressive</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Monochrome Colour</Label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setMonochromeColor('white')}
+                        className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium border transition-all flex items-center justify-center gap-1.5
+                          ${state.monochromeColor === 'white'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground hover:border-primary/40'}`}
+                        data-testid="btn-mono-white"
+                      >
+                        <span className="w-3 h-3 rounded-full bg-white border border-border inline-block" />
+                        White
+                      </button>
+                      <button
+                        onClick={() => setMonochromeColor('black')}
+                        className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium border transition-all flex items-center justify-center gap-1.5
+                          ${state.monochromeColor === 'black'
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border text-muted-foreground hover:border-primary/40'}`}
+                        data-testid="btn-mono-black"
+                      >
+                        <span className="w-3 h-3 rounded-full bg-foreground inline-block" />
+                        Black
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Used for monochrome icon and notification icon. White is standard for Android adaptive icons.
+                    </p>
+                  </div>
                 </div>
 
                 <Separator />
@@ -295,7 +359,6 @@ export default function AssetGenerator() {
                     </div>
                   )}
 
-                  {/* Preview swatch */}
                   <div
                     className="h-10 w-full rounded-lg border border-border"
                     style={
@@ -487,9 +550,26 @@ function AssetCard({
         <p className="text-xs font-semibold truncate text-foreground" title={def.label}>
           {def.label}
         </p>
-        <p className="text-[10px] text-muted-foreground mt-0.5">
-          {def.width}×{def.height}
-        </p>
+        <div className="flex items-center justify-between mt-0.5 gap-1">
+          <p className="text-[10px] text-muted-foreground">
+            {def.width}×{def.height}
+          </p>
+          {def.removeBackground && (
+            <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded font-medium">
+              bg stripped
+            </span>
+          )}
+          {def.monochrome && (
+            <span className="text-[9px] bg-violet-500/10 text-violet-600 dark:text-violet-400 px-1 py-0.5 rounded font-medium">
+              mono
+            </span>
+          )}
+          {def.noCornerRadius && (
+            <span className="text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded font-medium">
+              flat
+            </span>
+          )}
+        </div>
       </div>
     </motion.div>
   );
