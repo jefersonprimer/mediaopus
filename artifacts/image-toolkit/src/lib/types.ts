@@ -8,9 +8,14 @@ export interface ImageItem {
   status: 'idle' | 'processing' | 'done' | 'error';
   originalWidth: number;
   originalHeight: number;
+  // AI background removal
   bgRemovalStatus: 'idle' | 'processing' | 'done' | 'error';
   bgRemovedBlob: Blob | null;
   bgRemovedUrl: string | null;
+  // Solid color background removal
+  solidBgStatus: 'idle' | 'processing' | 'done' | 'error';
+  solidBgRemovedBlob: Blob | null;
+  solidBgRemovedUrl: string | null;
 }
 
 export interface ProcessOptions {

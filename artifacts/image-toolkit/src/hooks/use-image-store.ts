@@ -11,6 +11,7 @@ interface ImageStore {
   updateItem: (id: string, updates: Partial<ImageItem>) => void;
   getProcessedItems: () => { blob: Blob; name: string }[];
   getBgRemovedItems: () => { blob: Blob; name: string }[];
+  getSolidBgRemovedItems: () => { blob: Blob; name: string }[];
 }
 
 const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
@@ -43,6 +44,9 @@ export const useImageStore = create<ImageStore>((set, get) => ({
         bgRemovalStatus: 'idle' as const,
         bgRemovedBlob: null,
         bgRemovedUrl: null,
+        solidBgStatus: 'idle' as const,
+        solidBgRemovedBlob: null,
+        solidBgRemovedUrl: null,
       };
     });
     const newItems = await Promise.all(newItemsP);
@@ -54,6 +58,7 @@ export const useImageStore = create<ImageStore>((set, get) => ({
       if (item) {
         URL.revokeObjectURL(item.previewUrl);
         if (item.bgRemovedUrl) URL.revokeObjectURL(item.bgRemovedUrl);
+        if (item.solidBgRemovedUrl) URL.revokeObjectURL(item.solidBgRemovedUrl);
       }
       return { items: state.items.filter((i) => i.id !== id) };
     }),
@@ -62,6 +67,7 @@ export const useImageStore = create<ImageStore>((set, get) => ({
       state.items.forEach((item) => {
         URL.revokeObjectURL(item.previewUrl);
         if (item.bgRemovedUrl) URL.revokeObjectURL(item.bgRemovedUrl);
+        if (item.solidBgRemovedUrl) URL.revokeObjectURL(item.solidBgRemovedUrl);
       });
       return { items: [] };
     }),
@@ -94,10 +100,16 @@ export const useImageStore = create<ImageStore>((set, get) => ({
       .filter((i) => i.bgRemovalStatus === 'done' && i.bgRemovedBlob)
       .map((i) => {
         const nameWithoutExt = i.file.name.replace(/\.[^/.]+$/, '');
-        return {
-          blob: i.bgRemovedBlob!,
-          name: `${nameWithoutExt}-no-bg.png`,
-        };
+        return { blob: i.bgRemovedBlob!, name: `${nameWithoutExt}-no-bg.png` };
+      });
+  },
+  getSolidBgRemovedItems: () => {
+    const { items } = get();
+    return items
+      .filter((i) => i.solidBgStatus === 'done' && i.solidBgRemovedBlob)
+      .map((i) => {
+        const nameWithoutExt = i.file.name.replace(/\.[^/.]+$/, '');
+        return { blob: i.solidBgRemovedBlob!, name: `${nameWithoutExt}-solid-bg-removed.png` };
       });
   },
 }));

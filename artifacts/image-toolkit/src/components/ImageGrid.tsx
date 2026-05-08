@@ -19,6 +19,8 @@ import { ImageCard } from './ImageCard';
 import { ImageItem } from '../lib/types';
 import { useImageStore } from '../hooks/use-image-store';
 import { useBackgroundRemoval } from '../hooks/use-background-removal';
+import { useSolidBgRemoval } from '../hooks/use-solid-bg-removal';
+import { useSolidBgOpts } from '../hooks/use-solid-bg-opts';
 
 interface ImageGridProps {
   items: ImageItem[];
@@ -27,16 +29,12 @@ interface ImageGridProps {
 export function ImageGrid({ items }: ImageGridProps) {
   const { reorderItems, removeItem } = useImageStore();
   const { removeBackground } = useBackgroundRemoval();
+  const { removeSolidBg } = useSolidBgRemoval();
+  const { opts: solidBgOpts } = useSolidBgOpts();
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -52,8 +50,8 @@ export function ImageGrid({ items }: ImageGridProps) {
     const a = document.createElement('a');
     a.href = url;
     const ext = item.processedBlob.type.split('/')[1] || 'jpg';
-    const nameWithoutExt = item.file.name.replace(/\.[^/.]+$/, '');
-    a.download = `${nameWithoutExt}-processed.${ext === 'jpeg' ? 'jpg' : ext}`;
+    const base = item.file.name.replace(/\.[^/.]+$/, '');
+    a.download = `${base}-processed.${ext === 'jpeg' ? 'jpg' : ext}`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -63,15 +61,22 @@ export function ImageGrid({ items }: ImageGridProps) {
     const url = URL.createObjectURL(item.bgRemovedBlob);
     const a = document.createElement('a');
     a.href = url;
-    const nameWithoutExt = item.file.name.replace(/\.[^/.]+$/, '');
-    a.download = `${nameWithoutExt}-no-bg.png`;
+    a.download = `${item.file.name.replace(/\.[^/.]+$/, '')}-no-bg.png`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  if (items.length === 0) {
-    return null;
-  }
+  const handleDownloadSolidBgRemoved = (item: ImageItem) => {
+    if (!item.solidBgRemovedBlob) return;
+    const url = URL.createObjectURL(item.solidBgRemovedBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${item.file.name.replace(/\.[^/.]+$/, '')}-solid-bg-removed.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (items.length === 0) return null;
 
   return (
     <div className="w-full">
@@ -80,10 +85,7 @@ export function ImageGrid({ items }: ImageGridProps) {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext
-          items={items.map((i) => i.id)}
-          strategy={rectSortingStrategy}
-        >
+        <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             <AnimatePresence>
               {items.map((item, index) => (
@@ -101,6 +103,9 @@ export function ImageGrid({ items }: ImageGridProps) {
                     onDownload={handleDownload}
                     onRemoveBackground={removeBackground}
                     onDownloadBgRemoved={handleDownloadBgRemoved}
+                    onRemoveSolidBg={removeSolidBg}
+                    onDownloadSolidBgRemoved={handleDownloadSolidBgRemoved}
+                    solidBgOpts={solidBgOpts}
                   />
                 </motion.div>
               ))}
