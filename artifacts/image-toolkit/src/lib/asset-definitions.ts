@@ -26,6 +26,7 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 1024,
     bgFill: true,
     foregroundScale: 1,
+    noCornerRadius: true,
     description: '1024×1024 — used by Expo as the base icon',
   },
   {
@@ -49,7 +50,6 @@ export const ASSET_DEFS: AssetDef[] = [
     height: 1024,
     bgFill: false,
     foregroundScale: 0.5,
-    removeBackground: true,
     description: '1024×1024 transparent — centered logo for splash screen',
   },
 
