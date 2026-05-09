@@ -18,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
+import logo from "/logo.png";
+
 const NAV = [
   { href: "/resize", label: "Resize", icon: ImageIcon },
   { href: "/removebg", label: "Remove BG", icon: Eraser },
@@ -32,16 +34,22 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 select-none shrink-0">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Sparkles className="w-5 h-5 text-primary" />
+        <Link
+          href="/"
+          className="group flex items-center gap-3 select-none shrink-0 transition-opacity hover:opacity-90"
+        >
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-purple-600/50 rounded-xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative w-10 h-10 bg-white rounded-xl border border-border/50 shadow-sm flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
+              <img src={logo} alt="logo" className="w-7 h-7 object-contain" />
+            </div>
           </div>
-          <span className="font-bold text-lg tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent hidden sm:block">
-            Image Toolkit
-          </span>
-          <span className="px-2 py-0.5 rounded-full bg-muted text-[10px] font-medium text-muted-foreground ml-1 uppercase tracking-wider hidden sm:block">
-            Local
-          </span>
+          <div className="flex flex-col">
+            <span className="text-lg font-black tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 group-hover:from-primary group-hover:to-primary/70 transition-all flex items-center gap-1">
+              MediaOpus
+              <Sparkles className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+            </span>
+          </div>
         </Link>
 
         {/* Nav tabs */}

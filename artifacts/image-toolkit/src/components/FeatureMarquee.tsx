@@ -27,10 +27,16 @@ const marqueeVariants = {
   }),
 };
 
-const MarqueeRow = ({ items, direction }: { items: string[], direction: number }) => {
+const MarqueeRow = ({
+  items,
+  direction,
+}: {
+  items: string[];
+  direction: number;
+}) => {
   // Double the items to ensure seamless loop with 50% translation
   const displayItems = [...items, ...items];
-  
+
   return (
     <div className="flex overflow-hidden whitespace-nowrap py-2 select-none">
       <motion.div
@@ -41,10 +47,12 @@ const MarqueeRow = ({ items, direction }: { items: string[], direction: number }
       >
         {displayItems.map((item, index) => (
           <div key={index} className="flex items-center gap-8">
-            <span className="text-xl md:text-2xl font-bold text-muted-foreground/30 hover:text-primary transition-colors cursor-default">
+            <span className="text-xl md:text-2xl font-bold text-black dark:text-muted-foreground/30 hover:text-primary transition-colors cursor-default">
               {item}
             </span>
-            <span className="text-xl md:text-2xl font-light text-muted-foreground/10">|</span>
+            <span className="text-xl md:text-2xl font-light text-muted-foreground/10">
+              |
+            </span>
           </div>
         ))}
       </motion.div>

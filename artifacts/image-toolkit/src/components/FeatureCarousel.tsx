@@ -1,19 +1,12 @@
 import React from "react";
 import { Link } from "wouter";
-import Autoplay from "embla-carousel-autoplay";
+import { motion } from "framer-motion";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 const features = [
   {
@@ -60,56 +53,65 @@ const features = [
   },
 ];
 
+const marqueeVariants = {
+  animate: {
+    x: ["0%", "-50%"],
+    transition: {
+      x: {
+        repeat: Infinity,
+        repeatType: "loop" as const,
+        duration: 40,
+        ease: "linear" as const,
+      },
+    },
+  },
+};
+
 export function FeatureCarousel() {
-  const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
-  );
+  // Double the features for seamless looping
+  const displayFeatures = [...features, ...features];
 
   return (
-    <section className="w-full py-4">
-      <Carousel
-        plugins={[plugin.current]}
-        onMouseEnter={plugin.current.stop}
-        onMouseLeave={plugin.current.reset}
-        opts={{
-          align: "start",
-          loop: true,
-        }}
-        className="w-full"
-      >
-        <CarouselContent className="-ml-2 md:-ml-4">
-          {features.map((feature, index) => (
-            <CarouselItem
+    <section className="w-full py-4 relative overflow-hidden">
+      <div className="absolute left-0 top-0 bottom-0 w-12 md:w-32 z-10 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-12 md:w-32 z-10 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+      
+      <div className="flex whitespace-nowrap">
+        <motion.div
+          className="flex gap-4 md:gap-6"
+          variants={marqueeVariants}
+          animate="animate"
+          whileHover={{ animationPlayState: "paused" }}
+          style={{ cursor: "pointer" }}
+        >
+          {displayFeatures.map((feature, index) => (
+            <div
               key={index}
-              className="pl-2 md:pl-4 basis-[85%] md:basis-1/2 lg:basis-1/3"
+              className="w-[256px] h-[290px] shrink-0 py-4"
             >
-              <Link href={feature.link}>
-                <Card className="overflow-hidden cursor-pointer hover:border-primary/50 transition-all hover:shadow-md h-full flex flex-col items-center py-8">
-                  <div className="flex items-center justify-center w-26 h-26 rounded-full overflow-hidden bg-white">
+              <Link href={feature.link} className="block h-full">
+                <Card className="relative h-full flex flex-col cursor-pointer overflow-hidden rounded-xl border border-gray-950/60 backdrop-blur-md bg-black/20 hover:bg-black/40 transition-all dark:border-gray-50/10 dark:bg-[#0f0f0f]/30 dark:hover:bg-[#0f0f0f]/60 hover:border-primary/50 hover:shadow-md items-center justify-center py-4">
+                  <div className="flex items-center justify-center w-20 h-20 rounded-full overflow-hidden bg-white mb-2 shrink-0">
                     <img
                       src={feature.image}
                       alt={feature.title}
-                      className="w-[88px] h-[88px] object-cover transition-transform hover:scale-105"
+                      className="w-[64px] h-[64px] object-cover transition-transform hover:scale-105"
                     />
                   </div>
-                  <CardHeader className="flex-1 p-4">
-                    <CardTitle className="text-base md:text-lg">
+                  <CardHeader className="p-4 text-center whitespace-normal">
+                    <CardTitle className="text-base">
                       {feature.title}
                     </CardTitle>
-                    <CardDescription className="line-clamp-2 text-xs md:text-sm">
+                    <CardDescription className="line-clamp-2 text-xs">
                       {feature.description}
                     </CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
-            </CarouselItem>
+            </div>
           ))}
-        </CarouselContent>
-        <div className="hidden md:flex justify-end gap-2 mt-4">
-          <CarouselPrevious className="static translate-y-0" />
-          <CarouselNext className="static translate-y-0" />
-        </div>
-      </Carousel>
+        </motion.div>
+      </div>
     </section>
   );
 }
