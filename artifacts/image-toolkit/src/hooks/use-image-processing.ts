@@ -6,6 +6,14 @@ import { useToast } from './use-toast';
 
 const pica = new Pica();
 
+const shouldFallbackToCanvasResize = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false;
+  return (
+    error.message.includes('Pica: cannot use getImageData on canvas') ||
+    error.message.toLowerCase().includes('getimagedata')
+  );
+};
+
 export function useImageProcessing() {
   const { items, updateItem } = useImageStore();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -34,11 +42,24 @@ export function useImageProcessing() {
     dstCanvas.height = h;
 
     if (w !== img.naturalWidth || h !== img.naturalHeight) {
-      await pica.resize(srcCanvas, dstCanvas, {
-        unsharpAmount: 80,
-        unsharpRadius: 0.6,
-        unsharpThreshold: 2
-      });
+      try {
+        await pica.resize(srcCanvas, dstCanvas, {
+          unsharpAmount: 80,
+          unsharpRadius: 0.6,
+          unsharpThreshold: 2
+        });
+      } catch (error) {
+        if (!shouldFallbackToCanvasResize(error)) {
+          throw error;
+        }
+        const ctx = dstCanvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('Failed to get destination canvas context');
+        }
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(srcCanvas, 0, 0, w, h);
+      }
     } else {
       dstCanvas.getContext('2d')!.drawImage(srcCanvas, 0, 0);
     }
