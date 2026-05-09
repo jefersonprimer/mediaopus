@@ -6,25 +6,23 @@ import { ControlsPanel } from '../components/ControlsPanel';
 import { useImageStore } from '../hooks/use-image-store';
 import { motion } from 'framer-motion';
 
-export default function Home() {
+export default function RemoveBg() {
   const { items, addItems } = useImageStore();
 
   return (
     <div className="min-h-screen bg-background flex flex-col text-foreground selection:bg-primary/20">
       <Header />
-      
+
       <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full max-w-7xl mx-auto">
-          
-          {/* Left Column: Main content (Upload + Grid) */}
           <div className="flex-1 flex flex-col gap-6 lg:gap-8 min-w-0">
             <div className="space-y-2">
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                Browser-native image processing
+                Background removal workspace
               </h1>
-                <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
-                  Resize, compress, and convert images entirely locally. No uploads. Fast, private, and secure.
-                </p>
+              <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
+                Remove solid or complex backgrounds locally in your browser. No uploads, no servers.
+              </p>
             </div>
 
             <motion.div
@@ -45,7 +43,7 @@ export default function Home() {
                     Drag to reorder
                   </span>
                 </div>
-                <ImageGrid items={items} enableBgTools={false} />
+                <ImageGrid items={items} enableBgTools />
               </div>
             )}
 
@@ -56,17 +54,15 @@ export default function Home() {
                 </div>
                 <h3 className="text-lg font-medium mb-1">Your workspace is empty</h3>
                 <p className="text-sm text-muted-foreground max-w-sm">
-                  Upload some images to start compressing, resizing, and converting them right here in your browser.
+                  Upload images to remove white/black/solid backgrounds or run AI background removal.
                 </p>
               </div>
             )}
           </div>
 
-          {/* Right Column: Controls Panel */}
           <div className="w-full lg:w-80 xl:w-[340px] shrink-0 h-fit lg:sticky lg:top-24 mt-8 lg:mt-0">
-            <ControlsPanel mode="processor" />
+            <ControlsPanel mode="removebg" />
           </div>
-
         </div>
       </main>
     </div>

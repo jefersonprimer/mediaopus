@@ -24,9 +24,10 @@ import { useSolidBgOpts } from '../hooks/use-solid-bg-opts';
 
 interface ImageGridProps {
   items: ImageItem[];
+  enableBgTools?: boolean;
 }
 
-export function ImageGrid({ items }: ImageGridProps) {
+export function ImageGrid({ items, enableBgTools = true }: ImageGridProps) {
   const { reorderItems, removeItem } = useImageStore();
   const { removeBackground } = useBackgroundRemoval();
   const { removeSolidBg } = useSolidBgRemoval();
@@ -101,11 +102,11 @@ export function ImageGrid({ items }: ImageGridProps) {
                     item={item}
                     onRemove={removeItem}
                     onDownload={handleDownload}
-                    onRemoveBackground={removeBackground}
-                    onDownloadBgRemoved={handleDownloadBgRemoved}
-                    onRemoveSolidBg={removeSolidBg}
-                    onDownloadSolidBgRemoved={handleDownloadSolidBgRemoved}
-                    solidBgOpts={solidBgOpts}
+                    onRemoveBackground={enableBgTools ? removeBackground : undefined}
+                    onDownloadBgRemoved={enableBgTools ? handleDownloadBgRemoved : undefined}
+                    onRemoveSolidBg={enableBgTools ? removeSolidBg : undefined}
+                    onDownloadSolidBgRemoved={enableBgTools ? handleDownloadSolidBgRemoved : undefined}
+                    solidBgOpts={enableBgTools ? solidBgOpts : undefined}
                   />
                 </motion.div>
               ))}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Monitor, Sparkles, Image as ImageIcon, Smartphone } from 'lucide-react';
+import { Moon, Sun, Monitor, Sparkles, Image as ImageIcon, Smartphone, Eraser } from 'lucide-react';
 import { Button } from './ui/button';
 import { Link, useLocation } from 'wouter';
 import {
@@ -12,6 +12,7 @@ import {
 
 const NAV = [
   { href: '/', label: 'Image Processor', icon: ImageIcon },
+  { href: '/removebg', label: 'Remove BG', icon: Eraser },
   { href: '/assets', label: 'Asset Generator', icon: Smartphone },
 ];
 

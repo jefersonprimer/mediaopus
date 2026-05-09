@@ -33,7 +33,13 @@ import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Badge } from './ui/badge';
 
-export function ControlsPanel() {
+type ControlsPanelMode = 'processor' | 'removebg';
+
+interface ControlsPanelProps {
+  mode?: ControlsPanelMode;
+}
+
+export function ControlsPanel({ mode = 'processor' }: ControlsPanelProps) {
   const { items, clearItems, getProcessedItems, getBgRemovedItems, getSolidBgRemovedItems } =
     useImageStore();
   const { processAll, isProcessing } = useImageProcessing();
@@ -78,6 +84,8 @@ export function ControlsPanel() {
 
   const solidBgDoneCount = items.filter((i) => i.solidBgStatus === 'done').length;
   const aiBgDoneCount = items.filter((i) => i.bgRemovalStatus === 'done').length;
+  const showBgTools = mode === 'removebg';
+  const showProcessorTools = mode === 'processor';
 
   const handleDownloadZip = async (
     zipItems: { blob: Blob; name: string }[],
@@ -109,7 +117,7 @@ export function ControlsPanel() {
         <CardContent className="flex flex-col gap-0 py-0">
 
           {/* ── Solid BG Removal ─────────────────────── */}
-          <div className="py-5 px-1 flex flex-col gap-3">
+          {showBgTools && <div className="py-5 px-1 flex flex-col gap-3">
             <button
               className="flex items-center justify-between w-full"
               onClick={() => setShowSolidBgSection((v) => !v)}
@@ -247,12 +255,12 @@ export function ControlsPanel() {
                 )}
               </div>
             )}
-          </div>
+          </div>}
 
-          <Separator />
+          {showBgTools && <Separator />}
 
           {/* ── AI BG Removal ───────────────────────── */}
-          <div className="py-5 px-1 flex flex-col gap-3">
+          {showBgTools && <div className="py-5 px-1 flex flex-col gap-3">
             <button
               className="flex items-center justify-between w-full"
               onClick={() => setShowAiBgSection((v) => !v)}
@@ -308,12 +316,12 @@ export function ControlsPanel() {
                 )}
               </div>
             )}
-          </div>
+          </div>}
 
-          <Separator />
+          {showProcessorTools && <Separator />}
 
           {/* ── Output Format ───────────────────────── */}
-          <div className="py-5 px-1 space-y-3">
+          {showProcessorTools && <div className="py-5 px-1 space-y-3">
             <Label className="text-sm font-semibold text-foreground">Output Format</Label>
             <RadioGroup
               value={format}
@@ -329,12 +337,12 @@ export function ControlsPanel() {
                 </div>
               ))}
             </RadioGroup>
-          </div>
+          </div>}
 
-          <Separator />
+          {showProcessorTools && <Separator />}
 
           {/* ── Quality ─────────────────────────────── */}
-          <div className="py-5 px-1 space-y-4">
+          {showProcessorTools && <div className="py-5 px-1 space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Quality</Label>
               <span className="text-sm font-mono text-muted-foreground">{quality}%</span>
@@ -351,12 +359,12 @@ export function ControlsPanel() {
             {format === 'png' && (
               <p className="text-xs text-muted-foreground">Quality setting ignored for PNG (lossless).</p>
             )}
-          </div>
+          </div>}
 
-          <Separator />
+          {showProcessorTools && <Separator />}
 
           {/* ── Resize ──────────────────────────────── */}
-          <div className="py-5 px-1 space-y-4">
+          {showProcessorTools && <div className="py-5 px-1 space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Resize (px)</Label>
               <div className="flex items-center gap-2">
@@ -400,12 +408,12 @@ export function ControlsPanel() {
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground">Leave blank to keep original dimensions.</p>
-          </div>
+          </div>}
 
-          <Separator />
+          {showProcessorTools && <Separator />}
 
           {/* ── Metadata ────────────────────────────── */}
-          <div className="py-5 px-1 space-y-2">
+          {showProcessorTools && <div className="py-5 px-1 space-y-2">
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-sm font-semibold">Remove Metadata</Label>
@@ -421,53 +429,57 @@ export function ControlsPanel() {
             <p className="text-[10px] text-muted-foreground italic">
               Always enforced by the browser's Canvas API.
             </p>
-          </div>
+          </div>}
 
         </CardContent>
       </ScrollArea>
 
       {/* ── Footer ──────────────────────────────────── */}
       <div className="p-4 border-t border-border/50 bg-muted/20 sticky bottom-0 z-10 flex flex-col gap-3">
-        {savingsPercent && Number(savingsPercent) > 0 && (
+        {showProcessorTools && savingsPercent && Number(savingsPercent) > 0 && (
           <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-2.5 rounded-lg text-xs flex items-center justify-between font-medium">
             <span>Total Savings</span>
             <span className="text-sm">-{savingsPercent}%</span>
           </div>
         )}
 
-        <Button
-          className="w-full font-semibold shadow-sm h-11"
-          onClick={() =>
-            processAll({
-              width: width || null,
-              height: height || null,
-              maintainAspectRatio: maintainRatio,
-              quality,
-              format,
-              removeMetadata,
-            })
-          }
-          disabled={!hasItems || isBusy}
-          data-testid="btn-process-all"
-        >
-          {isProcessing ? (
-            <>Processing...</>
-          ) : (
-            <><Play className="w-4 h-4 mr-2 fill-current" />Process {items.length > 0 ? items.length : ''} Images</>
-          )}
-        </Button>
-
-        <div className="grid grid-cols-2 gap-2">
+        {showProcessorTools && (
           <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => handleDownloadZip(processedItems, 'image-toolkit-export')}
-            disabled={!processedItems.length || isBusy}
-            data-testid="btn-download-zip"
+            className="w-full font-semibold shadow-sm h-11"
+            onClick={() =>
+              processAll({
+                width: width || null,
+                height: height || null,
+                maintainAspectRatio: maintainRatio,
+                quality,
+                format,
+                removeMetadata,
+              })
+            }
+            disabled={!hasItems || isBusy}
+            data-testid="btn-process-all"
           >
-            <DownloadCloud className="w-4 h-4 mr-2" />
-            ZIP
+            {isProcessing ? (
+              <>Processing...</>
+            ) : (
+              <><Play className="w-4 h-4 mr-2 fill-current" />Process {items.length > 0 ? items.length : ''} Images</>
+            )}
           </Button>
+        )}
+
+        <div className={`grid gap-2 ${showProcessorTools ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          {showProcessorTools && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => handleDownloadZip(processedItems, 'image-toolkit-export')}
+              disabled={!processedItems.length || isBusy}
+              data-testid="btn-download-zip"
+            >
+              <DownloadCloud className="w-4 h-4 mr-2" />
+              ZIP
+            </Button>
+          )}
           <Button
             variant="ghost"
             className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
