@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import Home from "@/pages/Home";
 import AssetGenerator from "@/pages/AssetGenerator";
+
+import Resize from "@/pages/Resize";
 import RemoveBg from "@/pages/RemoveBg";
 import NotFound from "@/pages/not-found";
 
@@ -14,6 +16,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/resize" component={Resize} />
       <Route path="/removebg" component={RemoveBg} />
       <Route path="/assets" component={AssetGenerator} />
       <Route component={NotFound} />
@@ -23,10 +26,10 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider 
-      attribute="class" 
-      defaultTheme="system" 
-      enableSystem 
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
       disableTransitionOnChange
       storageKey="image-toolkit-theme"
     >
