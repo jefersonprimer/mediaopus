@@ -21,23 +21,23 @@
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-primary-border: var(--primary-border);
+  --color-primary-border: hsl(var(--primary-border));
 
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-secondary-border: var(--secondary-border);
+  --color-secondary-border: hsl(var(--secondary-border));
 
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-muted-border: var(--muted-border);
+  --color-muted-border: hsl(var(--muted-border));
 
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-accent-border: var(--accent-border);
+  --color-accent-border: hsl(var(--accent-border));
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-destructive-border: var(--destructive-border);
+  --color-destructive-border: hsl(var(--destructive-border));
 
   --color-sidebar: hsl(var(--sidebar));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
@@ -74,18 +74,23 @@
   
   --primary: 221 83% 53%;
   --primary-foreground: 210 40% 98%;
+  --primary-border: 221 83% 48%;
   
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
+  --secondary-border: 214.3 31.8% 91.4%;
   
   --muted: 210 40% 96.1%;
   --muted-foreground: 215.4 16.3% 46.9%;
+  --muted-border: 214.3 31.8% 91.4%;
   
   --accent: 210 40% 96.1%;
   --accent-foreground: 222.2 47.4% 11.2%;
+  --accent-border: 214.3 31.8% 91.4%;
   
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
+  --destructive-border: 0 84.2% 55%;
 
   --input: 214.3 31.8% 91.4%;
   --ring: 221 83% 53%;
@@ -98,6 +103,8 @@
   --sidebar-accent: 210 40% 96.1%;
   --sidebar-accent-foreground: 222.2 47.4% 11.2%;
   --sidebar-ring: 221 83% 53%;
+
+  --button-outline: hsl(214.3 31.8% 91.4%);
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
@@ -120,18 +127,23 @@
   
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 47.4% 11.2%;
+  --primary-border: 217.2 91.2% 55%;
   
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
+  --secondary-border: 217 33% 22%;
   
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
+  --muted-border: 217 33% 22%;
   
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
+  --accent-border: 217 33% 22%;
   
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
+  --destructive-border: 0 62.8% 25%;
   
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 48%;
@@ -144,6 +156,8 @@
   --sidebar-accent: 217.2 32.6% 17.5%;
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-ring: 224.3 76.3% 48%;
+
+  --button-outline: hsl(217 33% 17%);
 }
 
 @layer base {
