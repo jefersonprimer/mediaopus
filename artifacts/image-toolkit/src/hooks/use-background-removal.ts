@@ -15,7 +15,7 @@ export function useBackgroundRemoval() {
       const { removeBackground: imglyRemoveBackground } = await import('@imgly/background-removal');
 
       const blob = await imglyRemoveBackground(item.file, {
-        model: 'small',
+        model: 'isnet',
         output: {
           format: 'image/png',
           quality: 1,
