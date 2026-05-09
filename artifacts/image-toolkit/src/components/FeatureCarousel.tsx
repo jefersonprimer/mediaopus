@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "wouter";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Card,
   CardHeader,
@@ -60,9 +61,16 @@ const features = [
 ];
 
 export function FeatureCarousel() {
+  const plugin = React.useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
+  );
+
   return (
     <section className="w-full py-4">
       <Carousel
+        plugins={[plugin.current]}
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
         opts={{
           align: "start",
           loop: true,

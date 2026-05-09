@@ -1,6 +1,11 @@
 import React from 'react';
 import { Header } from '../components/Header';
 import { FeatureCarousel } from '../components/FeatureCarousel';
+import { FeatureMarquee } from '../components/FeatureMarquee';
+import { ProcessSteps } from '../components/ProcessSteps';
+import { FeaturesDetail } from '../components/FeaturesDetail';
+import { FAQ } from '../components/FAQ';
+import { Footer } from '../components/Footer';
 
 export default function Home() {
   return (
@@ -8,7 +13,7 @@ export default function Home() {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-12 md:py-24 flex flex-col items-center justify-center">
-        <div className="w-full max-w-5xl space-y-8 text-center">
+        <div className="w-full max-w-5xl space-y-16 text-center">
           <div className="space-y-4">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
               Powerful Image Tools
@@ -19,9 +24,20 @@ export default function Home() {
             </p>
           </div>
           
-          <FeatureCarousel />
+          <div className="space-y-8">
+            <FeatureCarousel />
+            <FeatureMarquee />
+          </div>
+
+          <ProcessSteps />
+
+          <FeaturesDetail />
+
+          <FAQ />
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
