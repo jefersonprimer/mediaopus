@@ -44,7 +44,7 @@ export function Header() {
         >
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-purple-600/50 rounded-xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative w-10 h-10 bg-white rounded-xl border border-border/50 shadow-sm flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
+            <div className="relative w-10 h-10 bg-white rounded-full border border-border/50 shadow-sm flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
               <img src={logo} alt="logo" className="w-12 h-12 object-contain" />
             </div>
           </div>
@@ -86,7 +86,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full relative"
+                className="h-9 w-9 rounded-full relative hover:cursor-pointer"
                 data-testid="theme-toggle"
               >
                 <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
