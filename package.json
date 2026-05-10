@@ -23,6 +23,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@imgly/background-removal": "^1.7.0",
     "@tanstack/react-query": "^5.90.21",
+    "bmp-js": "^0.1.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
     "drizzle-orm": "^0.45.2",
@@ -40,8 +41,8 @@
     "react-dom": "19.1.0",
     "react-dropzone": "^15.0.0",
     "sharp": "^0.34.5",
-    "zustand": "^5.0.13",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

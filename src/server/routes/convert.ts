@@ -3,6 +3,8 @@ import multer from "multer";
 import sharp from "sharp";
 import pngToIco from "png-to-ico";
 import potrace from "potrace";
+// @ts-ignore
+import bmp from "bmp-js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -240,6 +242,77 @@ router.post("/convert/svg", upload.single("file"), async (req, res) => {
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
   res.setHeader("Content-Disposition", "attachment; filename=vectorized.svg");
   res.send(svg);
+});
+
+router.post("/convert/to/:format", upload.single("file"), async (req, res) => {
+  const uploadedFile = req.file;
+  const targetFormat = (req.params.format as string)?.toLowerCase();
+
+  if (!uploadedFile?.buffer || !isImageMime(uploadedFile.mimetype)) {
+    res.status(400).json({ message: "Send one image file as multipart field 'file'." });
+    return;
+  }
+
+  try {
+    const roundness = req.body?.roundness ? parseRoundness(req.body as Record<string, unknown>) : null;
+    let pipeline: sharp.Sharp;
+
+    if (roundness !== null) {
+      const shape = roundnessToSquircle(roundness);
+      const master = await buildFaviconReadyMaster(uploadedFile.buffer, shape);
+      pipeline = sharp(master);
+    } else {
+      pipeline = sharp(uploadedFile.buffer);
+    }
+
+    let contentType = "image/png";
+    let extension = targetFormat;
+
+    switch (targetFormat) {
+      case "jpg":
+      case "jpeg":
+        pipeline = pipeline.jpeg({ quality: 90 });
+        contentType = "image/jpeg";
+        extension = "jpg";
+        break;
+      case "png":
+        pipeline = pipeline.png();
+        contentType = "image/png";
+        break;
+      case "webp":
+        pipeline = pipeline.webp({ quality: 80 });
+        contentType = "image/webp";
+        break;
+      case "gif":
+        pipeline = pipeline.gif();
+        contentType = "image/gif";
+        break;
+      case "bmp": {
+        const { data, info } = await pipeline.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        const bmpData = {
+          data,
+          width: info.width,
+          height: info.height,
+        };
+        const bmpBuffer = bmp.encode(bmpData).data;
+        res.setHeader("Content-Type", "image/bmp");
+        res.setHeader("Content-Disposition", "attachment; filename=converted.bmp");
+        res.send(bmpBuffer);
+        return;
+      }
+      default:
+        res.status(400).json({ message: `Format ${targetFormat} not supported.` });
+        return;
+    }
+
+    const output = await pipeline.toBuffer();
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename=converted.${extension}`);
+    res.send(output);
+  } catch (error) {
+    console.error("Conversion error:", error);
+    res.status(500).json({ message: "Failed to convert image." });
+  }
 });
 
 export default router;

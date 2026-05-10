@@ -3,14 +3,17 @@ import { useDropzone } from 'react-dropzone';
 import { Header } from '../components/Header';
 import { Button } from '../components/ui/button';
 import { Slider } from '../components/ui/slider';
+import { Switch } from '../components/ui/switch';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
   exportIco,
   exportSvg,
   exportFaviconMasterPng,
+  exportGeneric,
   analyzeImageComplexity,
   SvgMode,
+  ExportFormat,
   DEFAULT_FAVICON_ROUNDNESS,
 } from '../lib/export-formats';
 import { useToast } from '../hooks/use-toast';
@@ -34,6 +37,7 @@ export default function Convert() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourcePreview, setSourcePreview] = useState<string | null>(null);
   const [faviconRoundness, setFaviconRoundness] = useState(DEFAULT_FAVICON_ROUNDNESS);
+  const [applySquircle, setApplySquircle] = useState(true);
   const [faviconPreviewUrl, setFaviconPreviewUrl] = useState<string | null>(null);
   const [faviconPreviewLoading, setFaviconPreviewLoading] = useState(false);
   const faviconPreviewRef = useRef<string | null>(null);
@@ -41,6 +45,7 @@ export default function Convert() {
   const [isExportingIco, setIsExportingIco] = useState(false);
   const [isExportingSvg, setIsExportingSvg] = useState(false);
   const [isExportingMasterPng, setIsExportingMasterPng] = useState(false);
+  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
   const [svgMode, setSvgMode] = useState<SvgMode>('icon');
   const [svgThreshold, setSvgThreshold] = useState(180);
   const [svgSmoothness, setSvgSmoothness] = useState(20);
@@ -175,6 +180,32 @@ export default function Convert() {
       setIsExportingSvg(false);
     }
   }, [sourceFile, svgComplexity, svgMode, svgThreshold, svgSmoothness, saveBlob, toast]);
+
+  const handleExportGeneric = useCallback(
+    async (format: ExportFormat) => {
+      if (!sourceFile) return;
+      setExportingFormat(format);
+      try {
+        const options = applySquircle ? { roundness: faviconRoundness } : undefined;
+        const blob = await exportGeneric(sourceFile, format, options);
+        saveBlob(blob, `converted.${format}`);
+        toast({
+          title: `${format.toUpperCase()} export ready`,
+          description: `Your image was converted to ${format.toUpperCase()}.`,
+        });
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: 'Export failed',
+          description: `Could not create ${format.toUpperCase()}.`,
+          variant: 'destructive',
+        });
+      } finally {
+        setExportingFormat(null);
+      }
+    },
+    [sourceFile, faviconRoundness, applySquircle, saveBlob, toast],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -403,6 +434,45 @@ export default function Convert() {
                   <FileType2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
                   {isExportingSvg ? '…' : 'SVG trace'}
                 </Button>
+              </div>
+
+              <div className="space-y-3 pt-3 border-t border-border/50">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Standard formats (with squircle)
+                </Label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {(['jpg', 'png', 'webp', 'gif', 'bmp'] as ExportFormat[]).map((format) => (
+                    <Button
+                      key={format}
+                      variant="outline"
+                      className="text-[10px] h-9 px-2"
+                      onClick={() => handleExportGeneric(format)}
+                      disabled={!sourceFile || exportingFormat !== null}
+                    >
+                      {exportingFormat === format ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        format.toUpperCase()
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                <div className="space-y-0.5">
+                  <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    Apply Squircle effect
+                  </Label>
+                  <p className="text-[9px] text-muted-foreground">
+                    Includes padding and corner rounding.
+                  </p>
+                </div>
+                <Switch
+                  checked={applySquircle}
+                  onCheckedChange={setApplySquircle}
+                  disabled={!sourceFile}
+                />
               </div>
 
               {svgComplexity?.isComplex && (

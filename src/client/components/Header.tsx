@@ -22,7 +22,7 @@ import logo from "/logo.png";
 const NAV = [
   { href: "/resize", label: "Resize", icon: ImageIcon },
   { href: "/removebg", label: "Remove BG", icon: Eraser },
-  { href: "/convert", label: "Favicon", icon: FileImage },
+  { href: "/convert", label: "Convert", icon: FileImage },
   { href: "/assets", label: "Assets", icon: Smartphone },
 ];
 

@@ -50,7 +50,8 @@ export interface FaviconExportOptions {
 }
 
 function roundnessField(opts?: FaviconExportOptions): Record<string, string> {
-  const r = opts?.roundness ?? DEFAULT_FAVICON_ROUNDNESS;
+  if (opts?.roundness === undefined) return {};
+  const r = opts.roundness;
   return { roundness: String(Math.max(0, Math.min(100, r))) };
 }
 
@@ -58,7 +59,8 @@ export async function exportIco(
   sourceFile: File,
   opts?: FaviconExportOptions,
 ): Promise<Blob> {
-  return requestBinaryExport("/api/convert/ico", sourceFile, roundnessField(opts));
+  const fields = opts ? roundnessField(opts) : roundnessField({ roundness: DEFAULT_FAVICON_ROUNDNESS });
+  return requestBinaryExport("/api/convert/ico", sourceFile, fields);
 }
 
 /** 512×512 rounded, padded favicon-ready PNG (same look as ICO layers, best for previews / handoff). */
@@ -66,10 +68,11 @@ export async function exportFaviconMasterPng(
   sourceFile: File,
   opts?: FaviconExportOptions,
 ): Promise<Blob> {
+  const fields = opts ? roundnessField(opts) : roundnessField({ roundness: DEFAULT_FAVICON_ROUNDNESS });
   return requestBinaryExport(
     "/api/convert/favicon-master",
     sourceFile,
-    roundnessField(opts),
+    fields,
   );
 }
 
@@ -82,6 +85,20 @@ export async function exportSvg(
     threshold: String(opts.threshold),
     smoothness: String(opts.smoothness),
   });
+}
+
+export type ExportFormat = "jpg" | "png" | "webp" | "gif" | "bmp";
+
+export async function exportGeneric(
+  sourceFile: File,
+  format: ExportFormat,
+  opts?: FaviconExportOptions,
+): Promise<Blob> {
+  return requestBinaryExport(
+    `/api/convert/to/${format}`,
+    sourceFile,
+    roundnessField(opts),
+  );
 }
 
 export async function analyzeImageComplexity(sourceFile: File): Promise<ComplexityResult> {
