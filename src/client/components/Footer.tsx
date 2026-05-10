@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "wouter";
 import { Image as ImageIcon, Github, Twitter, Mail } from "lucide-react";
+import logo from "/logo.png";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,13 +12,25 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4 col-span-1 md:col-span-1">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="bg-primary p-1.5 rounded-lg">
-                <ImageIcon className="h-5 w-5 text-primary-foreground" />
+            <Link
+              href="/"
+              className="group flex items-center gap-3 select-none shrink-0 transition-opacity hover:opacity-90"
+            >
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-purple-600/50 rounded-xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative w-10 h-10 bg-white rounded-full border border-border/50 shadow-sm flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
+                  <img
+                    src={logo}
+                    alt="logo"
+                    className="w-12 h-12 object-contain"
+                  />
+                </div>
               </div>
-              <span className="font-bold text-xl tracking-tight">
-                ImageToolkit
-              </span>
+              <div className="flex-col hidden md:flex">
+                <span className="text-lg font-black tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 group-hover:from-primary group-hover:to-primary/70 transition-all flex items-center gap-1">
+                  MediaOpus
+                </span>
+              </div>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Professional-grade image tools directly in your browser. Private,
@@ -135,24 +148,36 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter Section */}
           <div className="space-y-4">
             <h3 className="font-semibold text-sm uppercase tracking-wider text-foreground">
-              Newsletter
+              More from Developer
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Stay updated with the latest tools and features.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Email address"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2">
-                Join
-              </button>
-            </div>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="https://nolio.vercel.app"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Nolio
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://devfreetools.vercel.app"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  DevFreeTools
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://primeranimelist.vercel.app"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  PAL
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
