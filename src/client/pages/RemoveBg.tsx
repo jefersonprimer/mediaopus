@@ -21,29 +21,26 @@ export default function RemoveBg() {
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col min-w-0 bg-muted/30 overflow-y-auto">
             <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 space-y-8">
-              <div className="text-center space-y-3">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider"
-                >
-                  <Eraser className="w-3 h-3" />
-                  Local AI Processing
-                </motion.div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  Background Removal
-                </h1>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  Remove complex or solid backgrounds with high precision using local AI. Fast, private, and secure.
-                </p>
-              </div>
+              {items.length === 0 && (
+                <>
+                  <div className="text-center space-y-3">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      Background Removal
+                    </h1>
+                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                      Remove complex or solid backgrounds with high precision
+                      using local AI. Fast, private, and secure.
+                    </p>
+                  </div>
+
+                  <UploadZone
+                    onUpload={addItems}
+                    className="py-12 border-2 border-dashed border-primary/20 bg-background/50 backdrop-blur-sm rounded-3xl hover:border-primary/40 transition-all shadow-inner"
+                  />
+                </>
+              )}
 
               <div className="space-y-12">
-                <UploadZone
-                  onUpload={addItems}
-                  className="py-12 border-2 border-dashed border-primary/20 bg-background/50 backdrop-blur-sm rounded-3xl hover:border-primary/40 transition-all shadow-inner"
-                />
-
                 <AnimatePresence>
                   {items.length > 0 && (
                     <motion.div
@@ -54,21 +51,27 @@ export default function RemoveBg() {
                     >
                       {/* Processed Result Preview */}
                       <div className="rounded-3xl border bg-background/50 backdrop-blur-sm p-4 md:p-6 shadow-sm">
-                        <ResultsPreview items={items} selectedItemId={selectedItemId} />
+                        <ResultsPreview
+                          items={items}
+                          selectedItemId={selectedItemId}
+                        />
                       </div>
 
                       <div className="space-y-6">
                         <div className="flex items-center justify-between border-b pb-4">
                           <div className="space-y-1">
-                            <h2 className="text-2xl font-black tracking-tight">Your Workspace</h2>
+                            <h2 className="text-2xl font-black tracking-tight">
+                              Your Workspace
+                            </h2>
                             <p className="text-sm text-muted-foreground font-medium">
-                              Select an image to see the background removal preview
+                              Select an image to see the background removal
+                              preview
                             </p>
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={clearItems} 
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearItems}
                             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
@@ -77,7 +80,11 @@ export default function RemoveBg() {
                         </div>
 
                         <div className="pb-12">
-                          <ImageGrid items={items} enableBgTools onAdd={addItems} />
+                          <ImageGrid
+                            items={items}
+                            enableBgTools
+                            onAdd={addItems}
+                          />
                         </div>
                       </div>
                     </motion.div>

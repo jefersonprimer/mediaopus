@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useDropzone } from "react-dropzone";
 import { Header } from "../components/Header";
 import { Button } from "../components/ui/button";
 import { Slider } from "../components/ui/slider";
@@ -33,6 +32,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { cn } from "../lib/utils";
+import { UploadZone } from "@/components/UploadZone";
 
 const CHECKERBOARD = {
   backgroundImage:
@@ -257,12 +257,6 @@ export default function Convert() {
     setSvgComplexity(null);
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [] },
-    multiple: false,
-  });
-
   return (
     <div className="min-h-screen bg-background flex flex-col text-foreground selection:bg-primary/20">
       <Header />
@@ -272,49 +266,26 @@ export default function Convert() {
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col min-w-0 bg-muted/30 overflow-y-auto">
             <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 space-y-8">
-              <div className="text-center space-y-3">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider"
-                >
-                  <FileType2 className="w-3 h-3" />
-                  Local Processing
-                </motion.div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  Image Converter
-                </h1>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  Build favicon-ready squircles, ICO, PNG master, and SVG traces. 100% private and browser-native.
-                </p>
-              </div>
+              {!sourceFile && (
+                <>
+                  <div className="text-center space-y-3">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      Image Converter
+                    </h1>
+                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                      Build favicon-ready squircles, ICO, PNG master, and SVG
+                      traces. 100% private and browser-native.
+                    </p>
+                  </div>
+
+                  <UploadZone
+                    onUpload={onDrop}
+                    className="py-12 border-2 border-dashed border-primary/20 bg-background/50 backdrop-blur-sm rounded-3xl hover:border-primary/40 transition-all shadow-inner"
+                  />
+                </>
+              )}
 
               <div className="space-y-12">
-                <div
-                  {...getRootProps()}
-                  className={cn(
-                    "relative py-12 border-2 border-dashed rounded-3xl transition-all shadow-inner cursor-pointer",
-                    isDragActive 
-                      ? "border-primary bg-primary/10 scale-[1.01]" 
-                      : "border-primary/20 bg-background/50 backdrop-blur-sm hover:border-primary/40"
-                  )}
-                >
-                  <input {...getInputProps()} />
-                  <div className="flex flex-col items-center justify-center text-center gap-3">
-                    <div className="w-16 h-16 rounded-full bg-background border shadow-sm flex items-center justify-center">
-                      <Upload className={cn("w-6 h-6", isDragActive ? "text-primary" : "text-muted-foreground")} />
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold">
-                        {isDragActive ? "Drop to upload" : "Select source image"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Click or drag and drop to start converting
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 <AnimatePresence>
                   {sourceFile && (
                     <motion.div
@@ -327,15 +298,17 @@ export default function Convert() {
                       <div className="rounded-3xl border bg-background/50 backdrop-blur-sm p-6 md:p-8 shadow-sm space-y-8">
                         <div className="flex items-center justify-between border-b pb-4">
                           <div className="space-y-1">
-                            <h2 className="text-2xl font-black tracking-tight">Compare & Tune</h2>
+                            <h2 className="text-2xl font-black tracking-tight">
+                              Compare & Tune
+                            </h2>
                             <p className="text-sm text-muted-foreground font-medium">
                               Adjust squircle roundness and compare results
                             </p>
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={clearWorkspace} 
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearWorkspace}
                             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
@@ -346,7 +319,9 @@ export default function Convert() {
                         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-8 items-center">
                           <div className="space-y-3 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
-                              <span className="text-xs font-bold uppercase tracking-widest bg-muted px-2 py-1 rounded">Original</span>
+                              <span className="text-xs font-bold uppercase tracking-widest bg-muted px-2 py-1 rounded">
+                                Original
+                              </span>
                             </div>
                             <div
                               className="relative aspect-square w-full max-w-[280px] mx-auto rounded-2xl border-2 overflow-hidden shadow-xl"
@@ -358,7 +333,9 @@ export default function Convert() {
                                 className="w-full h-full object-contain p-6"
                               />
                             </div>
-                            <p className="text-[10px] text-muted-foreground font-bold">{sourceFile.name}</p>
+                            <p className="text-[10px] text-muted-foreground font-bold">
+                              {sourceFile.name}
+                            </p>
                           </div>
 
                           <div className="hidden md:flex flex-col items-center justify-center text-primary/40">
@@ -367,7 +344,9 @@ export default function Convert() {
 
                           <div className="space-y-3 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
-                              <span className="text-xs font-bold uppercase tracking-widest bg-primary/10 text-primary px-2 py-1 rounded">Converted</span>
+                              <span className="text-xs font-bold uppercase tracking-widest bg-primary/10 text-primary px-2 py-1 rounded">
+                                Converted
+                              </span>
                             </div>
                             <div
                               className="relative aspect-square w-full max-w-[280px] mx-auto rounded-2xl border-2 border-primary/30 overflow-hidden shadow-xl bg-background"
@@ -386,7 +365,9 @@ export default function Convert() {
                                 </div>
                               )}
                             </div>
-                            <p className="text-[10px] text-primary font-bold">SQUIRCLE PREVIEW</p>
+                            <p className="text-[10px] text-primary font-bold">
+                              SQUIRCLE PREVIEW
+                            </p>
                           </div>
                         </div>
 
@@ -411,7 +392,9 @@ export default function Convert() {
                                   />
                                 ) : null}
                               </div>
-                              <span className="text-[10px] font-bold text-muted-foreground">32×32</span>
+                              <span className="text-[10px] font-bold text-muted-foreground">
+                                32×32
+                              </span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
                               <div
@@ -427,7 +410,9 @@ export default function Convert() {
                                   />
                                 ) : null}
                               </div>
-                              <span className="text-[10px] font-bold text-muted-foreground">16×16</span>
+                              <span className="text-[10px] font-bold text-muted-foreground">
+                                16×16
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -460,8 +445,12 @@ export default function Convert() {
                     {/* Tuning */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Squircle Roundness</Label>
-                        <span className="text-xs font-mono font-bold bg-muted px-2 py-1 rounded">{faviconRoundness}%</span>
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                          Squircle Roundness
+                        </Label>
+                        <span className="text-xs font-mono font-bold bg-muted px-2 py-1 rounded">
+                          {faviconRoundness}%
+                        </span>
                       </div>
                       <Slider
                         value={[faviconRoundness]}
@@ -480,7 +469,9 @@ export default function Convert() {
 
                     {/* Quick Exports */}
                     <div className="space-y-4">
-                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Primary Assets</Label>
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        Primary Assets
+                      </Label>
                       <div className="grid grid-cols-1 gap-2">
                         <Button
                           variant="outline"
@@ -489,11 +480,19 @@ export default function Convert() {
                           disabled={isExportingIco}
                         >
                           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
-                            {isExportingIco ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileType2 className="w-4 h-4 text-primary" />}
+                            {isExportingIco ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <FileType2 className="w-4 h-4 text-primary" />
+                            )}
                           </div>
                           <div className="flex flex-col items-start">
-                            <span className="text-xs font-bold">Download ICO</span>
-                            <span className="text-[10px] text-muted-foreground text-left">Multi-size favicon.ico</span>
+                            <span className="text-xs font-bold">
+                              Download ICO
+                            </span>
+                            <span className="text-[10px] text-muted-foreground text-left">
+                              Multi-size favicon.ico
+                            </span>
                           </div>
                         </Button>
                         <Button
@@ -503,11 +502,19 @@ export default function Convert() {
                           disabled={isExportingMasterPng}
                         >
                           <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform text-indigo-600">
-                            {isExportingMasterPng ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
+                            {isExportingMasterPng ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <FileImage className="w-4 h-4" />
+                            )}
                           </div>
                           <div className="flex flex-col items-start">
-                            <span className="text-xs font-bold">PNG Master</span>
-                            <span className="text-[10px] text-muted-foreground text-left">512×512 Squircle PNG</span>
+                            <span className="text-xs font-bold">
+                              PNG Master
+                            </span>
+                            <span className="text-[10px] text-muted-foreground text-left">
+                              512×512 Squircle PNG
+                            </span>
                           </div>
                         </Button>
                       </div>
@@ -518,9 +525,13 @@ export default function Convert() {
                     {/* Standard Formats */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Standard Formats</Label>
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                          Standard Formats
+                        </Label>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted-foreground font-bold">SQUIRCLE</span>
+                          <span className="text-[10px] text-muted-foreground font-bold">
+                            SQUIRCLE
+                          </span>
                           <Switch
                             checked={applySquircle}
                             onCheckedChange={setApplySquircle}
@@ -528,23 +539,23 @@ export default function Convert() {
                         </div>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
-                        {(["jpg", "png", "webp", "gif", "bmp"] as ExportFormat[]).map(
-                          (format) => (
-                            <Button
-                              key={format}
-                              variant="outline"
-                              className="text-[10px] h-9 font-bold uppercase rounded-lg"
-                              onClick={() => handleExportGeneric(format)}
-                              disabled={exportingFormat !== null}
-                            >
-                              {exportingFormat === format ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                format
-                              )}
-                            </Button>
-                          ),
-                        )}
+                        {(
+                          ["jpg", "png", "webp", "gif", "bmp"] as ExportFormat[]
+                        ).map((format) => (
+                          <Button
+                            key={format}
+                            variant="outline"
+                            className="text-[10px] h-9 font-bold uppercase rounded-lg"
+                            onClick={() => handleExportGeneric(format)}
+                            disabled={exportingFormat !== null}
+                          >
+                            {exportingFormat === format ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              format
+                            )}
+                          </Button>
+                        ))}
                       </div>
                     </div>
 
@@ -552,40 +563,53 @@ export default function Convert() {
 
                     {/* SVG Trace */}
                     <div className="space-y-4">
-                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">SVG Vector Trace</Label>
-                      
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        SVG Vector Trace
+                      </Label>
+
                       {svgComplexity?.isComplex && (
                         <div className="text-[10px] rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 p-3 flex items-start gap-2 leading-tight font-medium">
                           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                           <span>
-                            Best for simple logos ({svgComplexity.uniqueColors} colors detected).
+                            Best for simple logos ({svgComplexity.uniqueColors}{" "}
+                            colors detected).
                           </span>
                         </div>
                       )}
 
                       <div className="grid grid-cols-3 gap-2">
-                        {(["logo", "icon", "detail"] as SvgMode[]).map((mode) => (
-                          <button
-                            key={mode}
-                            type="button"
-                            onClick={() => setSvgMode(mode)}
-                            className={cn(
-                              "rounded-lg px-2 py-1.5 text-[10px] font-bold uppercase border transition-all",
-                              svgMode === mode
-                                ? "border-primary bg-primary/10 text-primary shadow-sm"
-                                : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"
-                            )}
-                          >
-                            {mode === "logo" ? "Logo" : mode === "icon" ? "Icon" : "Detail"}
-                          </button>
-                        ))}
+                        {(["logo", "icon", "detail"] as SvgMode[]).map(
+                          (mode) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setSvgMode(mode)}
+                              className={cn(
+                                "rounded-lg px-2 py-1.5 text-[10px] font-bold uppercase border transition-all",
+                                svgMode === mode
+                                  ? "border-primary bg-primary/10 text-primary shadow-sm"
+                                  : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40",
+                              )}
+                            >
+                              {mode === "logo"
+                                ? "Logo"
+                                : mode === "icon"
+                                  ? "Icon"
+                                  : "Detail"}
+                            </button>
+                          ),
+                        )}
                       </div>
 
                       <div className="space-y-4 pt-2">
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Threshold</Label>
-                            <span className="text-[10px] font-mono font-bold bg-muted px-1.5 rounded">{svgThreshold}</span>
+                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">
+                              Threshold
+                            </Label>
+                            <span className="text-[10px] font-mono font-bold bg-muted px-1.5 rounded">
+                              {svgThreshold}
+                            </span>
                           </div>
                           <Slider
                             value={[svgThreshold]}
@@ -597,8 +621,12 @@ export default function Convert() {
                         </div>
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Smoothness</Label>
-                            <span className="text-[10px] font-mono font-bold bg-muted px-1.5 rounded">{svgSmoothness}%</span>
+                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">
+                              Smoothness
+                            </Label>
+                            <span className="text-[10px] font-mono font-bold bg-muted px-1.5 rounded">
+                              {svgSmoothness}%
+                            </span>
                           </div>
                           <Slider
                             value={[svgSmoothness]}
@@ -613,7 +641,9 @@ export default function Convert() {
                       <Button
                         className="w-full h-11 font-bold rounded-xl shadow-lg shadow-primary/20"
                         onClick={handleExportSvg}
-                        disabled={isExportingSvg || Boolean(svgComplexity?.isComplex)}
+                        disabled={
+                          isExportingSvg || Boolean(svgComplexity?.isComplex)
+                        }
                       >
                         {isExportingSvg ? (
                           <>

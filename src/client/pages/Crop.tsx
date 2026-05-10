@@ -43,7 +43,12 @@ import {
   TooltipProvider,
 } from "../components/ui/tooltip";
 import { useBackgroundRemoval } from "../hooks/use-background-removal";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 import { cn } from "../lib/utils";
 
 const ASPECT_RATIOS = [
@@ -76,8 +81,15 @@ const PRESETS = [
 ];
 
 export default function Crop() {
-  const { items, addItems, removeItem, clearItems, updateItem, selectedItemId, setSelectedItemId } =
-    useImageStore();
+  const {
+    items,
+    addItems,
+    removeItem,
+    clearItems,
+    updateItem,
+    selectedItemId,
+    setSelectedItemId,
+  } = useImageStore();
   const { toast } = useToast();
 
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
@@ -276,41 +288,41 @@ export default function Crop() {
                     className="flex-1 flex flex-col p-6 overflow-y-auto"
                   >
                     <div className="max-w-6xl mx-auto w-full space-y-8 py-8 md:py-12">
-                      <div className="text-center space-y-3">
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider"
-                        >
-                          <CropIcon className="w-3 h-3" />
-                          Local Processing
-                        </motion.div>
-                        <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-                          Precise Image Cropping
-                        </h1>
-                        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                          Professional-grade tools to crop, rotate, and resize your images right in your browser.
-                        </p>
-                      </div>
+                      {items.length === 0 && (
+                        <>
+                          <div className="text-center space-y-3">
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                              Precise Image Cropping
+                            </h1>
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                              Professional-grade tools to crop, rotate, and
+                              resize your images right in your browser.
+                            </p>
+                          </div>
 
-                      <UploadZone
-                        onUpload={addItems}
-                        className="py-12 border-2 border-dashed border-primary/20 bg-background/50 backdrop-blur-sm rounded-3xl hover:border-primary/40 transition-all shadow-inner"
-                      />
+                          <UploadZone
+                            onUpload={addItems}
+                            className="py-12 border-2 border-dashed border-primary/20 bg-background/50 backdrop-blur-sm rounded-3xl hover:border-primary/40 transition-all shadow-inner"
+                          />
+                        </>
+                      )}
 
                       {items.length > 0 && (
                         <div className="space-y-6">
                           <div className="flex items-center justify-between border-b pb-4">
                             <div className="space-y-1">
-                              <h2 className="text-2xl font-black tracking-tight">Your Workspace</h2>
+                              <h2 className="text-2xl font-black tracking-tight">
+                                Your Workspace
+                              </h2>
                               <p className="text-sm text-muted-foreground font-medium">
-                                {items.length} {items.length === 1 ? 'image' : 'images'} added
+                                {items.length}{" "}
+                                {items.length === 1 ? "image" : "images"} added
                               </p>
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={clearItems} 
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={clearItems}
                               className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -376,7 +388,8 @@ export default function Crop() {
                             {selectedItem?.file.name}
                           </span>
                           <span className="text-[10px] text-muted-foreground uppercase font-medium">
-                            {selectedItem?.originalWidth} × {selectedItem?.originalHeight}px
+                            {selectedItem?.originalWidth} ×{" "}
+                            {selectedItem?.originalHeight}px
                           </span>
                         </div>
                       </div>
@@ -434,7 +447,14 @@ export default function Crop() {
                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1 bg-background/90 backdrop-blur-xl border rounded-full shadow-2xl z-20">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setZoom(prev => Math.max(1, prev - 0.2))}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-full"
+                              onClick={() =>
+                                setZoom((prev) => Math.max(1, prev - 0.2))
+                              }
+                            >
                               <Minimize2 className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -453,7 +473,14 @@ export default function Crop() {
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setZoom(prev => Math.min(3, prev + 0.2))}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-full"
+                              onClick={() =>
+                                setZoom((prev) => Math.min(3, prev + 0.2))
+                              }
+                            >
                               <Maximize2 className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -464,7 +491,14 @@ export default function Crop() {
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setRotation(r => (r - 90 + 360) % 360)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-full"
+                              onClick={() =>
+                                setRotation((r) => (r - 90 + 360) % 360)
+                              }
+                            >
                               <RotateCcw className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -473,7 +507,12 @@ export default function Crop() {
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setRotation(r => (r + 90) % 360)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-full"
+                              onClick={() => setRotation((r) => (r + 90) % 360)}
+                            >
                               <RotateCw className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -484,7 +523,12 @@ export default function Crop() {
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full" onClick={resetControls}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-full"
+                              onClick={resetControls}
+                            >
                               <RefreshCcw className="w-4 h-4" />
                             </Button>
                           </TooltipTrigger>
@@ -511,7 +555,7 @@ export default function Crop() {
                                   "relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 group shadow-sm",
                                   selectedItemId === item.id
                                     ? "border-primary ring-4 ring-primary/10 scale-105"
-                                    : "border-transparent opacity-60 hover:opacity-100 hover:border-primary/30"
+                                    : "border-transparent opacity-60 hover:opacity-100 hover:border-primary/30",
                                 )}
                               >
                                 <img
@@ -552,183 +596,249 @@ export default function Crop() {
                     </div>
                   </div>
 
-                <Tabs defaultValue="aspect" className="flex-1 flex flex-col min-h-0">
-                  <TabsList className="mx-4 mt-4 grid grid-cols-3">
-                    <TabsTrigger value="aspect">Ratio</TabsTrigger>
-                    <TabsTrigger value="presets">Presets</TabsTrigger>
-                    <TabsTrigger value="export">Export</TabsTrigger>
-                  </TabsList>
+                  <Tabs
+                    defaultValue="aspect"
+                    className="flex-1 flex flex-col min-h-0"
+                  >
+                    <TabsList className="mx-4 mt-4 grid grid-cols-3">
+                      <TabsTrigger value="aspect">Ratio</TabsTrigger>
+                      <TabsTrigger value="presets">Presets</TabsTrigger>
+                      <TabsTrigger value="export">Export</TabsTrigger>
+                    </TabsList>
 
-                  <ScrollArea className="flex-1 px-4">
-                    <div className="py-4 space-y-6">
-                      <TabsContent value="aspect" className="m-0 space-y-6">
-                        <div className="space-y-3">
-                          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Standard Ratios</Label>
-                          <div className="grid grid-cols-3 gap-2">
-                            {ASPECT_RATIOS.map((r) => (
-                              <Button
-                                key={r.label}
-                                variant={aspect === r.value ? "default" : "outline"}
-                                size="sm"
-                                className="text-xs h-9 rounded-xl"
-                                onClick={() => {
-                                  setAspect(r.value);
-                                  setShowSafeArea(false);
-                                }}
-                              >
-                                {r.label}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <Separator />
-
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                              <Label className="text-sm font-semibold">Safe Area Guides</Label>
-                              <p className="text-[10px] text-muted-foreground">For circular/rounded icons</p>
-                            </div>
-                            <Switch
-                              checked={showSafeArea}
-                              onCheckedChange={setShowSafeArea}
-                              disabled={aspect !== 1}
-                            />
-                          </div>
-                        </div>
-
-                        <Separator />
-
-                        <div className="space-y-3">
-                          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">AI Enhancement</Label>
-                          <Button
-                            variant="outline"
-                            className="w-full h-11 justify-start text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 border-indigo-200/50 rounded-xl"
-                            onClick={() => selectedItem && removeBackground(selectedItem)}
-                            disabled={isAiRemoving || isProcessing || !selectedItemId}
-                          >
-                            <Eraser className={cn("w-4 h-4 mr-2", isAiRemoving && "animate-spin")} />
-                            {isAiRemoving ? "Processing..." : "Remove Background"}
-                          </Button>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="presets" className="m-0 space-y-6">
-                        {PRESETS.map((group) => (
-                          <div key={group.group} className="space-y-3">
+                    <ScrollArea className="flex-1 px-4">
+                      <div className="py-4 space-y-6">
+                        <TabsContent value="aspect" className="m-0 space-y-6">
+                          <div className="space-y-3">
                             <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                              {group.group}
+                              Standard Ratios
                             </Label>
-                            <div className="grid grid-cols-1 gap-2">
-                              {group.items.map((p) => (
+                            <div className="grid grid-cols-3 gap-2">
+                              {ASPECT_RATIOS.map((r) => (
                                 <Button
-                                  key={p.label}
-                                  variant={aspect === p.value ? "secondary" : "outline"}
-                                  className="h-auto py-3 px-4 justify-between border-muted-foreground/10 rounded-xl group hover:border-primary/30 transition-all"
+                                  key={r.label}
+                                  variant={
+                                    aspect === r.value ? "default" : "outline"
+                                  }
+                                  size="sm"
+                                  className="text-xs h-9 rounded-xl"
                                   onClick={() => {
-                                    setAspect(p.value);
-                                    if (p.safeArea) setShowSafeArea(true);
-                                    else setShowSafeArea(false);
+                                    setAspect(r.value);
+                                    setShowSafeArea(false);
                                   }}
                                 >
-                                  <div className="flex flex-col items-start">
-                                    <span className="text-sm font-bold">{p.label}</span>
-                                    <span className="text-[10px] text-muted-foreground">{p.desc}</span>
-                                  </div>
-                                  <div className={cn(
-                                    "w-8 h-8 rounded border-2 transition-colors",
-                                    aspect === p.value ? "border-primary bg-primary/10" : "border-muted group-hover:border-primary/20"
-                                  )} style={{ aspectRatio: p.value }} />
+                                  {r.label}
                                 </Button>
                               ))}
                             </div>
                           </div>
-                        ))}
-                      </TabsContent>
 
-                      <TabsContent value="export" className="m-0 space-y-6">
-                        <div className="space-y-4">
-                          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Format</Label>
-                          <RadioGroup
-                            value={format}
-                            onValueChange={(val: any) => setFormat(val)}
-                            className="grid grid-cols-1 gap-2"
-                          >
-                            {[
-                              { label: "WebP (Recommended)", value: "image/webp", desc: "Best quality to size ratio" },
-                              { label: "PNG", value: "image/png", desc: "Lossless, supports transparency" },
-                              { label: "JPEG", value: "image/jpeg", desc: "Universal compatibility" },
-                            ].map((f) => (
-                              <div
-                                key={f.value}
-                                className={cn(
-                                  "flex items-start space-x-3 p-3 rounded-xl border transition-all cursor-pointer",
-                                  format === f.value ? "bg-primary/5 border-primary" : "hover:border-primary/20"
-                                )}
-                                onClick={() => setFormat(f.value as any)}
-                              >
-                                <RadioGroupItem value={f.value} id={`f-${f.label}`} className="mt-1" />
-                                <div className="space-y-0.5">
-                                  <Label htmlFor={`f-${f.label}`} className="text-sm font-bold block cursor-pointer">
-                                    {f.label}
-                                  </Label>
-                                  <p className="text-[10px] text-muted-foreground">{f.desc}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </div>
+                          <Separator />
 
-                        {format !== "image/png" && (
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                              <Label className="text-sm font-semibold">Quality</Label>
-                              <span className="text-xs font-mono font-bold bg-muted px-2 py-1 rounded">{quality}%</span>
+                              <div className="space-y-0.5">
+                                <Label className="text-sm font-semibold">
+                                  Safe Area Guides
+                                </Label>
+                                <p className="text-[10px] text-muted-foreground">
+                                  For circular/rounded icons
+                                </p>
+                              </div>
+                              <Switch
+                                checked={showSafeArea}
+                                onCheckedChange={setShowSafeArea}
+                                disabled={aspect !== 1}
+                              />
                             </div>
-                            <Slider
-                              value={[quality]}
-                              onValueChange={([v]) => setQuality(v)}
-                              min={10}
-                              max={100}
-                              step={1}
-                            />
                           </div>
-                        )}
-                      </TabsContent>
-                    </div>
-                  </ScrollArea>
 
-                  <div className="p-4 border-t bg-muted/20 space-y-2">
-                    {items.length > 1 && (
+                          <Separator />
+
+                          <div className="space-y-3">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                              AI Enhancement
+                            </Label>
+                            <Button
+                              variant="outline"
+                              className="w-full h-11 justify-start text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 border-indigo-200/50 rounded-xl"
+                              onClick={() =>
+                                selectedItem && removeBackground(selectedItem)
+                              }
+                              disabled={
+                                isAiRemoving || isProcessing || !selectedItemId
+                              }
+                            >
+                              <Eraser
+                                className={cn(
+                                  "w-4 h-4 mr-2",
+                                  isAiRemoving && "animate-spin",
+                                )}
+                              />
+                              {isAiRemoving
+                                ? "Processing..."
+                                : "Remove Background"}
+                            </Button>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="presets" className="m-0 space-y-6">
+                          {PRESETS.map((group) => (
+                            <div key={group.group} className="space-y-3">
+                              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                {group.group}
+                              </Label>
+                              <div className="grid grid-cols-1 gap-2">
+                                {group.items.map((p) => (
+                                  <Button
+                                    key={p.label}
+                                    variant={
+                                      aspect === p.value
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                    className="h-auto py-3 px-4 justify-between border-muted-foreground/10 rounded-xl group hover:border-primary/30 transition-all"
+                                    onClick={() => {
+                                      setAspect(p.value);
+                                      if (p.safeArea) setShowSafeArea(true);
+                                      else setShowSafeArea(false);
+                                    }}
+                                  >
+                                    <div className="flex flex-col items-start">
+                                      <span className="text-sm font-bold">
+                                        {p.label}
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground">
+                                        {p.desc}
+                                      </span>
+                                    </div>
+                                    <div
+                                      className={cn(
+                                        "w-8 h-8 rounded border-2 transition-colors",
+                                        aspect === p.value
+                                          ? "border-primary bg-primary/10"
+                                          : "border-muted group-hover:border-primary/20",
+                                      )}
+                                      style={{ aspectRatio: p.value }}
+                                    />
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </TabsContent>
+
+                        <TabsContent value="export" className="m-0 space-y-6">
+                          <div className="space-y-4">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                              Format
+                            </Label>
+                            <RadioGroup
+                              value={format}
+                              onValueChange={(val: any) => setFormat(val)}
+                              className="grid grid-cols-1 gap-2"
+                            >
+                              {[
+                                {
+                                  label: "WebP (Recommended)",
+                                  value: "image/webp",
+                                  desc: "Best quality to size ratio",
+                                },
+                                {
+                                  label: "PNG",
+                                  value: "image/png",
+                                  desc: "Lossless, supports transparency",
+                                },
+                                {
+                                  label: "JPEG",
+                                  value: "image/jpeg",
+                                  desc: "Universal compatibility",
+                                },
+                              ].map((f) => (
+                                <div
+                                  key={f.value}
+                                  className={cn(
+                                    "flex items-start space-x-3 p-3 rounded-xl border transition-all cursor-pointer",
+                                    format === f.value
+                                      ? "bg-primary/5 border-primary"
+                                      : "hover:border-primary/20",
+                                  )}
+                                  onClick={() => setFormat(f.value as any)}
+                                >
+                                  <RadioGroupItem
+                                    value={f.value}
+                                    id={`f-${f.label}`}
+                                    className="mt-1"
+                                  />
+                                  <div className="space-y-0.5">
+                                    <Label
+                                      htmlFor={`f-${f.label}`}
+                                      className="text-sm font-bold block cursor-pointer"
+                                    >
+                                      {f.label}
+                                    </Label>
+                                    <p className="text-[10px] text-muted-foreground">
+                                      {f.desc}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          </div>
+
+                          {format !== "image/png" && (
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-sm font-semibold">
+                                  Quality
+                                </Label>
+                                <span className="text-xs font-mono font-bold bg-muted px-2 py-1 rounded">
+                                  {quality}%
+                                </span>
+                              </div>
+                              <Slider
+                                value={[quality]}
+                                onValueChange={([v]) => setQuality(v)}
+                                min={10}
+                                max={100}
+                                step={1}
+                              />
+                            </div>
+                          )}
+                        </TabsContent>
+                      </div>
+                    </ScrollArea>
+
+                    <div className="p-4 border-t bg-muted/20 space-y-2">
+                      {items.length > 1 && (
+                        <Button
+                          variant="secondary"
+                          className="w-full h-11 rounded-xl"
+                          disabled={isProcessing || !selectedItemId}
+                          onClick={handleBatchApply}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          Apply to All
+                        </Button>
+                      )}
                       <Button
-                        variant="secondary"
-                        className="w-full h-11 rounded-xl"
-                        disabled={isProcessing || !selectedItemId}
-                        onClick={handleBatchApply}
+                        variant="ghost"
+                        className="w-full text-muted-foreground hover:text-destructive rounded-xl"
+                        onClick={() => {
+                          if (selectedItemId) {
+                            removeItem(selectedItemId);
+                          } else {
+                            clearItems();
+                          }
+                        }}
                       >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Apply to All
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        {selectedItemId ? "Delete Current" : "Clear All"}
                       </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      className="w-full text-muted-foreground hover:text-destructive rounded-xl"
-                      onClick={() => {
-                        if (selectedItemId) {
-                          removeItem(selectedItemId);
-                        } else {
-                          clearItems();
-                        }
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      {selectedItemId ? "Delete Current" : "Clear All"}
-                    </Button>
-                  </div>
-                </Tabs>
-              </motion.aside>
-            )}
+                    </div>
+                  </Tabs>
+                </motion.aside>
+              )}
             </AnimatePresence>
           </div>
         </main>
