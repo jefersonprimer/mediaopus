@@ -61,8 +61,10 @@ export default function AssetGenerator() {
   const [gradientAngle, setGradientAngle] = useState(135);
 
   const onDrop = useCallback(
-    (accepted: File[]) => { if (accepted[0]) setSourceFile(accepted[0]); },
-    [setSourceFile]
+    (accepted: File[]) => {
+      if (accepted[0]) setSourceFile(accepted[0]);
+    },
+    [setSourceFile],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

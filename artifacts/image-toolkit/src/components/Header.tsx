@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Smartphone,
   Eraser,
+  FileImage,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useLocation } from "wouter";
@@ -23,7 +24,8 @@ import logo from "/logo.png";
 const NAV = [
   { href: "/resize", label: "Resize", icon: ImageIcon },
   { href: "/removebg", label: "Remove BG", icon: Eraser },
-  { href: "/assets", label: "Asset Generator", icon: Smartphone },
+  { href: "/convert", label: "Favicon", icon: FileImage },
+  { href: "/assets", label: "Assets", icon: Smartphone },
 ];
 
 export function Header() {
@@ -41,7 +43,7 @@ export function Header() {
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-purple-600/50 rounded-xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
             <div className="relative w-10 h-10 bg-white rounded-xl border border-border/50 shadow-sm flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
-              <img src={logo} alt="logo" className="w-7 h-7 object-contain" />
+              <img src={logo} alt="logo" className="w-12 h-12 object-contain" />
             </div>
           </div>
           <div className="flex flex-col">

@@ -153,7 +153,7 @@ export function Footer() {
             &copy; {currentYear} MediaOpus. All rights reserved.
           </p>
           <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-            <span>PrimerLabs</span>
+            <span>Designed & Developed by PrimerLabs</span>
           </div>
         </div>
       </div>
