@@ -33,7 +33,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Badge } from './ui/badge';
 
-type ControlsPanelMode = 'processor' | 'removebg';
+type ControlsPanelMode = 'processor' | 'removebg' | 'compress';
 
 interface ControlsPanelProps {
   mode?: ControlsPanelMode;
@@ -49,6 +49,8 @@ export function ControlsPanel({ mode = 'processor' }: ControlsPanelProps) {
 
   const [quality, setQuality] = useState(80);
   const [format, setFormat] = useState<'jpg' | 'png' | 'webp'>('webp');
+  const [isWebP, setIsWebP] = useState(true);
+  const [isProgressive, setIsProgressive] = useState(false);
   const [removeMetadata, setRemoveMetadata] = useState(true);
   const [showSolidBgSection, setShowSolidBgSection] = useState(true);
   const [showAiBgSection, setShowAiBgSection] = useState(false);
@@ -85,7 +87,8 @@ export function ControlsPanel({ mode = 'processor' }: ControlsPanelProps) {
   const solidBgDoneCount = items.filter((i) => i.solidBgStatus === 'done').length;
   const aiBgDoneCount = items.filter((i) => i.bgRemovalStatus === 'done').length;
   const showBgTools = mode === 'removebg';
-  const showProcessorTools = mode === 'processor';
+  const showProcessorTools = mode === 'processor' || mode === 'compress';
+  const isCompressMode = mode === 'compress';
 
   const handleDownloadZip = async (
     zipItems: { blob: Blob; name: string }[],
@@ -108,333 +111,383 @@ export function ControlsPanel({ mode = 'processor' }: ControlsPanelProps) {
       <CardHeader className="py-4 border-b border-border/50 sticky top-0 bg-card z-10">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Settings2 className="w-5 h-5 text-primary" />
-          Processing Controls
+          {isCompressMode ? 'Compression Controls' : 'Processing Controls'}
         </CardTitle>
-        <CardDescription>Configure batch processing settings</CardDescription>
+        <CardDescription>
+          {isCompressMode ? 'Fine-tune image compression settings' : 'Configure batch processing settings'}
+        </CardDescription>
       </CardHeader>
 
       <ScrollArea className="flex-grow">
         <CardContent className="flex flex-col gap-0 py-0">
 
-          {/* ── Solid BG Removal ─────────────────────── */}
-          {showBgTools && <div className="py-5 px-1 flex flex-col gap-3">
-            <button
-              className="flex items-center justify-between w-full"
-              onClick={() => setShowSolidBgSection((v) => !v)}
-            >
-              <div className="flex items-center gap-2">
-                <Scissors className="w-4 h-4 text-amber-500" />
-                <Label className="text-sm font-semibold cursor-pointer text-foreground">
-                  Solid Background Removal
-                </Label>
-                {solidBgDoneCount > 0 && (
-                  <Badge variant="secondary" className="text-[10px]">
-                    {solidBgDoneCount}/{items.length}
-                  </Badge>
-                )}
-              </div>
-              {showSolidBgSection ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
-            </button>
-
-            {showSolidBgSection && (
-              <div className="flex flex-col gap-3">
-                <p className="text-xs text-muted-foreground">
-                  Instant pixel-level removal for logos, icons, and flat graphics. No AI needed.
-                </p>
-
-                {/* Quick presets */}
-                <div className="flex gap-2">
-                  <Button
-                    variant={rgbToHex(solidBgOpts.targetColor) === rgbToHex(PRESET_WHITE) ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1 text-xs h-8"
-                    onClick={() => { setSolidBgHexLocal('#ffffff'); setSolidBgOpts({ targetColor: PRESET_WHITE }); }}
-                    data-testid="btn-preset-white"
-                  >
-                    <div className="w-3 h-3 rounded-sm border border-current/30 mr-1.5 bg-white" />
-                    White
-                  </Button>
-                  <Button
-                    variant={rgbToHex(solidBgOpts.targetColor) === rgbToHex(PRESET_BLACK) ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1 text-xs h-8"
-                    onClick={() => { setSolidBgHexLocal('#000000'); setSolidBgOpts({ targetColor: PRESET_BLACK }); }}
-                    data-testid="btn-preset-black"
-                  >
-                    <div className="w-3 h-3 rounded-sm border border-current/30 mr-1.5 bg-black" />
-                    Black
-                  </Button>
-                </div>
-
-                {/* Color picker */}
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs text-muted-foreground shrink-0">Target Color</Label>
-                  <div className="flex items-center gap-2 flex-1">
-                    <input
-                      type="color"
-                      value={solidBgHex}
-                      onChange={(e) => handleHexChange(e.target.value)}
-                      className="w-8 h-8 rounded cursor-pointer border border-border bg-transparent p-0.5 shrink-0"
-                      data-testid="input-solid-bg-color"
-                    />
-                    <Input
-                      value={solidBgHex}
-                      onChange={(e) => handleHexChange(e.target.value)}
-                      className="font-mono text-xs h-8 uppercase"
-                      maxLength={7}
-                      data-testid="input-solid-bg-hex"
-                    />
-                  </div>
-                </div>
-
-                {/* Threshold slider */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Sensitivity</Label>
-                    <span className="text-xs font-mono text-muted-foreground">
-                      {solidBgOpts.threshold}%
-                    </span>
-                  </div>
-                  <Slider
-                    value={[solidBgOpts.threshold]}
-                    onValueChange={([v]) => setSolidBgOpts({ threshold: v })}
-                    min={1}
-                    max={80}
-                    step={1}
-                    data-testid="slider-solid-bg-threshold"
-                  />
-                  <p className="text-[10px] text-muted-foreground">
-                    Higher = removes more color variation. Lower = more precise.
-                  </p>
-                </div>
-
-                {/* Smooth edges */}
+          {isCompressMode ? (
+            <div className="py-5 px-1 space-y-6">
+              {/* ── Compression Quality ───────────────────────── */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-xs font-medium">Smooth Edges</Label>
-                    <p className="text-[10px] text-muted-foreground">Anti-aliased border fade</p>
+                  <Label className="text-sm font-semibold text-foreground">Compression Quality</Label>
+                  <span className="text-sm font-mono text-muted-foreground">{quality}%</span>
+                </div>
+                <Slider
+                  value={[quality]}
+                  onValueChange={([v]) => setQuality(v)}
+                  max={100}
+                  step={1}
+                  data-testid="quality-slider"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Lower quality results in smaller file sizes but may introduce artifacts.
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* ── Toggles ─────────────────────────────── */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-semibold">Convert to WebP</Label>
+                    <p className="text-[10px] text-muted-foreground">Modern format for better compression</p>
                   </div>
                   <Switch
-                    checked={solidBgOpts.smoothEdges}
-                    onCheckedChange={(v) => setSolidBgOpts({ smoothEdges: v })}
-                    className="scale-75 data-[state=checked]:bg-amber-500"
-                    data-testid="switch-smooth-edges"
+                    checked={isWebP}
+                    onCheckedChange={(v) => {
+                      setIsWebP(v);
+                      if (v) setIsProgressive(false);
+                    }}
+                    className="data-[state=checked]:bg-primary"
                   />
                 </div>
 
-                {/* Batch action */}
-                <Button
-                  variant="outline"
-                  className="w-full border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400"
-                  onClick={() => removeAllSolidBg(solidBgOpts)}
-                  disabled={!hasItems || isBusy}
-                  data-testid="btn-remove-all-solid-bg"
-                >
-                  {isSolidRemoving ? (
-                    <><Scissors className="w-4 h-4 mr-2 animate-pulse" />Processing...</>
-                  ) : (
-                    <><Scissors className="w-4 h-4 mr-2" />Remove All Solid Backgrounds</>
-                  )}
-                </Button>
-
-                {solidBgRemovedItems.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={() => handleDownloadZip(solidBgRemovedItems, 'solid-bg-removed')}
-                    data-testid="btn-download-solid-bg-zip"
-                  >
-                    <DownloadCloud className="w-3.5 h-3.5 mr-2" />
-                    Download {solidBgRemovedItems.length} PNG{solidBgRemovedItems.length !== 1 ? 's' : ''} as ZIP
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>}
-
-          {showBgTools && <Separator />}
-
-          {/* ── AI BG Removal ───────────────────────── */}
-          {showBgTools && <div className="py-5 px-1 flex flex-col gap-3">
-            <button
-              className="flex items-center justify-between w-full"
-              onClick={() => setShowAiBgSection((v) => !v)}
-            >
-              <div className="flex items-center gap-2">
-                <Eraser className="w-4 h-4 text-violet-500" />
-                <Label className="text-sm font-semibold cursor-pointer text-foreground">
-                  AI Background Removal
-                </Label>
-                {aiBgDoneCount > 0 && (
-                  <Badge variant="secondary" className="text-[10px]">
-                    {aiBgDoneCount}/{items.length}
-                  </Badge>
-                )}
-              </div>
-              {showAiBgSection ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
-            </button>
-
-            {showAiBgSection && (
-              <div className="flex flex-col gap-3">
-                <p className="text-xs text-muted-foreground">
-                  Uses an on-device AI model for complex images — people, animals, detailed subjects. Model downloads once and is cached.
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full border-dashed hover:border-solid hover:bg-violet-500/5 hover:text-violet-600 hover:border-violet-400"
-                  onClick={removeAllBackgrounds}
-                  disabled={!hasItems || isBusy}
-                  data-testid="btn-remove-all-bg"
-                >
-                  {isAiRemoving ? (
-                    <><Eraser className="w-4 h-4 mr-2 animate-pulse" />Processing...</>
-                  ) : (
-                    <><Eraser className="w-4 h-4 mr-2" />Remove All Backgrounds (AI)</>
-                  )}
-                </Button>
-
-                {bgRemovedItems.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={() => handleDownloadZip(bgRemovedItems, 'ai-no-background')}
-                    data-testid="btn-download-bg-zip"
-                  >
-                    <DownloadCloud className="w-3.5 h-3.5 mr-2" />
-                    Download {bgRemovedItems.length} AI PNG{bgRemovedItems.length !== 1 ? 's' : ''} as ZIP
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>}
-
-          {showProcessorTools && <Separator />}
-
-          {/* ── Output Format ───────────────────────── */}
-          {showProcessorTools && <div className="py-5 px-1 space-y-3">
-            <Label className="text-sm font-semibold text-foreground">Output Format</Label>
-            <RadioGroup
-              value={format}
-              onValueChange={(val: any) => setFormat(val)}
-              className="flex items-center gap-3"
-            >
-              {(['webp', 'jpg', 'png'] as const).map((f) => (
-                <div key={f} className="flex items-center space-x-2">
-                  <RadioGroupItem value={f} id={`r-${f}`} />
-                  <Label htmlFor={`r-${f}`} className="cursor-pointer text-xs uppercase">
-                    {f === 'jpg' ? 'JPEG' : f.toUpperCase()}
-                  </Label>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-semibold">Progressive JPG</Label>
+                    <p className="text-[10px] text-muted-foreground">Loads progressively in browsers</p>
+                  </div>
+                  <Switch
+                    checked={isProgressive}
+                    onCheckedChange={(v) => {
+                      setIsProgressive(v);
+                      if (v) setIsWebP(false);
+                    }}
+                    className="data-[state=checked]:bg-primary"
+                  />
                 </div>
-              ))}
-            </RadioGroup>
-          </div>}
-
-          {showProcessorTools && <Separator />}
-
-          {/* ── Quality ─────────────────────────────── */}
-          {showProcessorTools && <div className="py-5 px-1 space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Quality</Label>
-              <span className="text-sm font-mono text-muted-foreground">{quality}%</span>
-            </div>
-            <Slider
-              value={[quality]}
-              onValueChange={([v]) => setQuality(v)}
-              max={100}
-              step={1}
-              disabled={format === 'png'}
-              className={format === 'png' ? 'opacity-50' : ''}
-              data-testid="quality-slider"
-            />
-            {format === 'png' && (
-              <p className="text-xs text-muted-foreground">Quality setting ignored for PNG (lossless).</p>
-            )}
-          </div>}
-
-          {showProcessorTools && <Separator />}
-
-          {/* ── Resize ──────────────────────────────── */}
-          {showProcessorTools && <div className="py-5 px-1 space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Resize (px)</Label>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="maintain-ratio" className="text-xs text-muted-foreground cursor-pointer">
-                  Maintain Ratio
-                </Label>
-                <Switch
-                  id="maintain-ratio"
-                  checked={maintainRatio}
-                  onCheckedChange={setMaintainRatio}
-                  disabled
-                  className="scale-75 data-[state=checked]:bg-primary"
-                />
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Width</Label>
-                <Input
-                  type="number"
-                  placeholder="Auto"
-                  value={width || ''}
-                  onChange={(e) => handleWidthChange(e.target.value ? Number(e.target.value) : null)}
-                  className="font-mono text-sm"
-                  min={1}
-                />
-              </div>
-              <div className="flex items-center pt-5 text-muted-foreground">
-                {maintainRatio ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Height</Label>
-                <Input
-                  type="number"
-                  placeholder="Auto"
-                  value={height || ''}
-                  onChange={(e) => handleHeightChange(e.target.value ? Number(e.target.value) : null)}
-                  className="font-mono text-sm"
-                  min={1}
-                />
-              </div>
-            </div>
-            <p className="text-[10px] text-muted-foreground">Leave blank to keep original dimensions.</p>
-          </div>}
+          ) : (
+            <>
+              {/* ── Solid BG Removal ─────────────────────── */}
+              {showBgTools && (
+                <div className="py-5 px-1 flex flex-col gap-3">
+                  <button
+                    className="flex items-center justify-between w-full"
+                    onClick={() => setShowSolidBgSection((v) => !v)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Scissors className="w-4 h-4 text-amber-500" />
+                      <Label className="text-sm font-semibold cursor-pointer text-foreground">
+                        Solid Background Removal
+                      </Label>
+                      {solidBgDoneCount > 0 && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {solidBgDoneCount}/{items.length}
+                        </Badge>
+                      )}
+                    </div>
+                    {showSolidBgSection ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
 
-          {showProcessorTools && <Separator />}
+                  {showSolidBgSection && (
+                    <div className="flex flex-col gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Instant pixel-level removal for logos, icons, and flat graphics. No AI needed.
+                      </p>
 
-          {/* ── Metadata ────────────────────────────── */}
-          {showProcessorTools && <div className="py-5 px-1 space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm font-semibold">Remove Metadata</Label>
-                <p className="text-xs text-muted-foreground">Strips EXIF data (location, camera info)</p>
-              </div>
-              <Switch
-                checked={removeMetadata}
-                onCheckedChange={setRemoveMetadata}
-                disabled
-                className="data-[state=checked]:bg-primary"
-              />
-            </div>
-            <p className="text-[10px] text-muted-foreground italic">
-              Always enforced by the browser's Canvas API.
-            </p>
-          </div>}
+                      <div className="flex gap-2">
+                        <Button
+                          variant={rgbToHex(solidBgOpts.targetColor) === rgbToHex(PRESET_WHITE) ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 text-xs h-8"
+                          onClick={() => { setSolidBgHexLocal('#ffffff'); setSolidBgOpts({ targetColor: PRESET_WHITE }); }}
+                          data-testid="btn-preset-white"
+                        >
+                          <div className="w-3 h-3 rounded-sm border border-current/30 mr-1.5 bg-white" />
+                          White
+                        </Button>
+                        <Button
+                          variant={rgbToHex(solidBgOpts.targetColor) === rgbToHex(PRESET_BLACK) ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 text-xs h-8"
+                          onClick={() => { setSolidBgHexLocal('#000000'); setSolidBgOpts({ targetColor: PRESET_BLACK }); }}
+                          data-testid="btn-preset-black"
+                        >
+                          <div className="w-3 h-3 rounded-sm border border-current/30 mr-1.5 bg-black" />
+                          Black
+                        </Button>
+                      </div>
 
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs text-muted-foreground shrink-0">Target Color</Label>
+                        <div className="flex items-center gap-2 flex-1">
+                          <input
+                            type="color"
+                            value={solidBgHex}
+                            onChange={(e) => handleHexChange(e.target.value)}
+                            className="w-8 h-8 rounded cursor-pointer border border-border bg-transparent p-0.5 shrink-0"
+                            data-testid="input-solid-bg-color"
+                          />
+                          <Input
+                            value={solidBgHex}
+                            onChange={(e) => handleHexChange(e.target.value)}
+                            className="font-mono text-xs h-8 uppercase"
+                            maxLength={7}
+                            data-testid="input-solid-bg-hex"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-muted-foreground">Sensitivity</Label>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {solidBgOpts.threshold}%
+                          </span>
+                        </div>
+                        <Slider
+                          value={[solidBgOpts.threshold]}
+                          onValueChange={([v]) => setSolidBgOpts({ threshold: v })}
+                          min={1}
+                          max={80}
+                          step={1}
+                          data-testid="slider-solid-bg-threshold"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-xs font-medium">Smooth Edges</Label>
+                          <p className="text-[10px] text-muted-foreground">Anti-aliased border fade</p>
+                        </div>
+                        <Switch
+                          checked={solidBgOpts.smoothEdges}
+                          onCheckedChange={(v) => setSolidBgOpts({ smoothEdges: v })}
+                          className="scale-75 data-[state=checked]:bg-amber-500"
+                          data-testid="switch-smooth-edges"
+                        />
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        className="w-full border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400"
+                        onClick={() => removeAllSolidBg(solidBgOpts)}
+                        disabled={!hasItems || isBusy}
+                        data-testid="btn-remove-all-solid-bg"
+                      >
+                        {isSolidRemoving ? (
+                          <><Scissors className="w-4 h-4 mr-2 animate-pulse" />Processing...</>
+                        ) : (
+                          <><Scissors className="w-4 h-4 mr-2" />Remove All Solid Backgrounds</>
+                        )}
+                      </Button>
+
+                      {solidBgRemovedItems.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs"
+                          onClick={() => handleDownloadZip(solidBgRemovedItems, 'solid-bg-removed')}
+                          data-testid="btn-download-solid-bg-zip"
+                        >
+                          <DownloadCloud className="w-3.5 h-3.5 mr-2" />
+                          Download {solidBgRemovedItems.length} PNG{solidBgRemovedItems.length !== 1 ? 's' : ''} as ZIP
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {showBgTools && <Separator />}
+
+              {/* ── AI BG Removal ───────────────────────── */}
+              {showBgTools && (
+                <div className="py-5 px-1 flex flex-col gap-3">
+                  <button
+                    className="flex items-center justify-between w-full"
+                    onClick={() => setShowAiBgSection((v) => !v)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Eraser className="w-4 h-4 text-violet-500" />
+                      <Label className="text-sm font-semibold cursor-pointer text-foreground">
+                        AI Background Removal
+                      </Label>
+                      {aiBgDoneCount > 0 && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {aiBgDoneCount}/{items.length}
+                        </Badge>
+                      )}
+                    </div>
+                    {showAiBgSection ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+
+                  {showAiBgSection && (
+                    <div className="flex flex-col gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        Uses an on-device AI model for complex images — people, animals, detailed subjects. Model downloads once and is cached.
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="w-full border-dashed hover:border-solid hover:bg-violet-500/5 hover:text-violet-600 hover:border-violet-400"
+                        onClick={removeAllBackgrounds}
+                        disabled={!hasItems || isBusy}
+                        data-testid="btn-remove-all-bg"
+                      >
+                        {isAiRemoving ? (
+                          <><Eraser className="w-4 h-4 mr-2 animate-pulse" />Processing...</>
+                        ) : (
+                          <><Eraser className="w-4 h-4 mr-2" />Remove All Backgrounds (AI)</>
+                        )}
+                      </Button>
+
+                      {bgRemovedItems.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full text-xs"
+                          onClick={() => handleDownloadZip(bgRemovedItems, 'ai-no-background')}
+                          data-testid="btn-download-bg-zip"
+                        >
+                          <DownloadCloud className="w-3.5 h-3.5 mr-2" />
+                          Download {bgRemovedItems.length} AI PNG{bgRemovedItems.length !== 1 ? 's' : ''} as ZIP
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {showProcessorTools && mode === 'processor' && (
+                <>
+                  <Separator />
+                  <div className="py-5 px-1 space-y-3">
+                    <Label className="text-sm font-semibold text-foreground">Output Format</Label>
+                    <RadioGroup
+                      value={format}
+                      onValueChange={(val: any) => setFormat(val)}
+                      className="flex items-center gap-3"
+                    >
+                      {(['webp', 'jpg', 'png'] as const).map((f) => (
+                        <div key={f} className="flex items-center space-x-2">
+                          <RadioGroupItem value={f} id={`r-${f}`} />
+                          <Label htmlFor={`r-${f}`} className="cursor-pointer text-xs uppercase">
+                            {f === 'jpg' ? 'JPEG' : f.toUpperCase()}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                  <Separator />
+
+                  <div className="py-5 px-1 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">Quality</Label>
+                      <span className="text-sm font-mono text-muted-foreground">{quality}%</span>
+                    </div>
+                    <Slider
+                      value={[quality]}
+                      onValueChange={([v]) => setQuality(v)}
+                      max={100}
+                      step={1}
+                      disabled={format === 'png'}
+                      className={format === 'png' ? 'opacity-50' : ''}
+                      data-testid="quality-slider"
+                    />
+                    {format === 'png' && (
+                      <p className="text-xs text-muted-foreground">Quality setting ignored for PNG (lossless).</p>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div className="py-5 px-1 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">Resize (px)</Label>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="maintain-ratio" className="text-xs text-muted-foreground cursor-pointer">
+                          Maintain Ratio
+                        </Label>
+                        <Switch
+                          id="maintain-ratio"
+                          checked={maintainRatio}
+                          onCheckedChange={setMaintainRatio}
+                          disabled
+                          className="scale-75 data-[state=checked]:bg-primary"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Width</Label>
+                        <Input
+                          type="number"
+                          placeholder="Auto"
+                          value={width || ''}
+                          onChange={(e) => handleWidthChange(e.target.value ? Number(e.target.value) : null)}
+                          className="font-mono text-sm"
+                          min={1}
+                        />
+                      </div>
+                      <div className="flex items-center pt-5 text-muted-foreground">
+                        {maintainRatio ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">Height</Label>
+                        <Input
+                          type="number"
+                          placeholder="Auto"
+                          value={height || ''}
+                          onChange={(e) => handleHeightChange(e.target.value ? Number(e.target.value) : null)}
+                          className="font-mono text-sm"
+                          min={1}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="py-5 px-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-semibold">Remove Metadata</Label>
+                        <p className="text-xs text-muted-foreground">Strips EXIF data (location, camera info)</p>
+                      </div>
+                      <Switch
+                        checked={removeMetadata}
+                        onCheckedChange={setRemoveMetadata}
+                        disabled
+                        className="data-[state=checked]:bg-primary"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </CardContent>
       </ScrollArea>
 
-      {/* ── Footer ──────────────────────────────────── */}
       <div className="p-4 border-t border-border/50 bg-muted/20 sticky bottom-0 z-10 flex flex-col gap-3">
         {showProcessorTools && savingsPercent && Number(savingsPercent) > 0 && (
           <div className="bg-green-500/10 text-green-600 dark:text-green-400 p-2.5 rounded-lg text-xs flex items-center justify-between font-medium">
@@ -448,11 +501,11 @@ export function ControlsPanel({ mode = 'processor' }: ControlsPanelProps) {
             className="w-full font-semibold shadow-sm h-11"
             onClick={() =>
               processAll({
-                width: width || null,
-                height: height || null,
+                width: isCompressMode ? null : (width || null),
+                height: isCompressMode ? null : (height || null),
                 maintainAspectRatio: maintainRatio,
                 quality,
-                format,
+                format: isCompressMode ? (isWebP ? 'webp' : 'jpg') : format,
                 removeMetadata,
               })
             }

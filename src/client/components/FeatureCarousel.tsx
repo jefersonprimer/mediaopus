@@ -40,9 +40,9 @@ const features = [
   {
     title: "Compress",
     description:
-      "Reduce file size without losing quality for faster web performance.",
+      "Fine-tune compression with advanced controls and handle multiple images with ease.",
     image: "/Compress.webp",
-    link: "/",
+    link: "/compress",
   },
   {
     title: "Watermark",

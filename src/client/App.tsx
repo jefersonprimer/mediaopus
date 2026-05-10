@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Home from "@/pages/Home";
 import AssetGenerator from "@/pages/AssetGenerator";
 import Convert from "@/pages/Convert";
-
+import Compress from "@/pages/Compress";
 import Resize from "@/pages/Resize";
 import RemoveBg from "@/pages/RemoveBg";
 import NotFound from "@/pages/not-found";
@@ -18,6 +18,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/resize" component={Resize} />
+      <Route path="/compress" component={Compress} />
       <Route path="/removebg" component={RemoveBg} />
       <Route path="/convert" component={Convert} />
       <Route path="/assets" component={AssetGenerator} />

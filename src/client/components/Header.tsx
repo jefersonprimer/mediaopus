@@ -7,6 +7,7 @@ import {
   Smartphone,
   Eraser,
   FileImage,
+  Zap,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useLocation } from "wouter";
@@ -20,6 +21,7 @@ import {
 import logo from "/logo.png";
 
 const NAV = [
+  { href: "/compress", label: "Compress", icon: Zap },
   { href: "/resize", label: "Resize", icon: ImageIcon },
   { href: "/removebg", label: "Remove BG", icon: Eraser },
   { href: "/convert", label: "Convert", icon: FileImage },
