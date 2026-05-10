@@ -20,6 +20,8 @@ import { RemoveSolidBgOptions, PRESET_WHITE, PRESET_BLACK } from '../lib/remove-
 
 interface ImageCardProps {
   item: ImageItem;
+  isSelected?: boolean;
+  onSelect?: () => void;
   onRemove: (id: string) => void;
   onDownload?: (item: ImageItem) => void;
   onRemoveBackground?: (item: ImageItem) => void;
@@ -47,6 +49,8 @@ const CHECKERBOARD = {
 
 export function ImageCard({
   item,
+  isSelected,
+  onSelect,
   onRemove,
   onDownload,
   onRemoveBackground,
@@ -123,10 +127,15 @@ export function ImageCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative flex flex-col bg-card rounded-xl border border-border shadow-sm overflow-hidden transition-all duration-200 ${
+      onClick={onSelect}
+      className={`group relative flex flex-col bg-card rounded-xl border-2 transition-all duration-200 cursor-pointer overflow-hidden ${
+        isSelected
+          ? 'border-primary shadow-lg ring-2 ring-primary/20 scale-[1.02]'
+          : 'border-border shadow-sm hover:shadow-md hover:border-border/80'
+      } ${
         isDragging
-          ? 'shadow-xl ring-2 ring-primary border-transparent scale-[1.02]'
-          : 'hover:shadow-md'
+          ? 'opacity-50 grayscale'
+          : ''
       }`}
       data-testid={`image-card-${item.id}`}
     >
@@ -156,7 +165,7 @@ export function ImageCard({
       {hasAlternateView && (
         <button
           className="absolute top-2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm rounded-md px-2 py-1 text-[10px] font-medium text-foreground flex items-center gap-1 whitespace-nowrap"
-          onClick={cyclePreview}
+          onClick={(e) => { e.stopPropagation(); cyclePreview(); }}
           data-testid={`btn-cycle-preview-${item.id}`}
         >
           <Layers className="h-3 w-3" />
@@ -245,7 +254,7 @@ export function ImageCard({
           {/* Download processed */}
           {item.status === 'done' && item.processedBlob && onDownload && (
             <Button variant="outline" size="sm" className="w-full h-8 text-xs"
-              onClick={() => onDownload(item)} data-testid={`btn-download-${item.id}`}>
+              onClick={(e) => { e.stopPropagation(); onDownload(item); }} data-testid={`btn-download-${item.id}`}>
               <Download className="w-3 h-3 mr-1.5" />
               Download
             </Button>
@@ -257,7 +266,7 @@ export function ImageCard({
               variant="outline"
               size="sm"
               className="w-full h-8 text-xs border-dashed hover:border-solid hover:bg-violet-500/5 hover:text-violet-600 hover:border-violet-400"
-              onClick={() => onRemoveBackground(item)}
+              onClick={(e) => { e.stopPropagation(); onRemoveBackground(item); }}
               disabled={isBusy}
               data-testid={`btn-remove-bg-${item.id}`}
             >
@@ -271,7 +280,7 @@ export function ImageCard({
 
           {hasAiBgRemoved && onDownloadBgRemoved && (
             <Button variant="secondary" size="sm" className="w-full h-8 text-xs"
-              onClick={() => onDownloadBgRemoved(item)} data-testid={`btn-download-no-bg-${item.id}`}>
+              onClick={(e) => { e.stopPropagation(); onDownloadBgRemoved(item); }} data-testid={`btn-download-no-bg-${item.id}`}>
               <Download className="w-3 h-3 mr-1.5" />
               PNG — AI no BG
             </Button>
@@ -284,7 +293,7 @@ export function ImageCard({
                 variant="outline"
                 size="sm"
                 className="flex-1 min-w-[60px] h-8 text-[10px] border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-1"
-                onClick={() => onRemoveSolidBg(item, { ...solidBgOpts, targetColor: PRESET_WHITE })}
+                onClick={(e) => { e.stopPropagation(); onRemoveSolidBg(item, { ...solidBgOpts, targetColor: PRESET_WHITE }); }}
                 disabled={isBusy}
                 data-testid={`btn-remove-solid-white-${item.id}`}
                 title="Remove white background"
@@ -299,7 +308,7 @@ export function ImageCard({
                 variant="outline"
                 size="sm"
                 className="flex-1 min-w-[60px] h-8 text-[10px] border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-1"
-                onClick={() => onRemoveSolidBg(item, { ...solidBgOpts, targetColor: PRESET_BLACK })}
+                onClick={(e) => { e.stopPropagation(); onRemoveSolidBg(item, { ...solidBgOpts, targetColor: PRESET_BLACK }); }}
                 disabled={isBusy}
                 data-testid={`btn-remove-solid-black-${item.id}`}
                 title="Remove black background"
@@ -310,7 +319,7 @@ export function ImageCard({
                 variant="outline"
                 size="sm"
                 className="h-8 text-[10px] border-dashed hover:border-solid hover:bg-amber-500/5 hover:text-amber-600 hover:border-amber-400 px-2"
-                onClick={() => onRemoveSolidBg(item, solidBgOpts)}
+                onClick={(e) => { e.stopPropagation(); onRemoveSolidBg(item, solidBgOpts); }}
                 disabled={isBusy}
                 data-testid={`btn-remove-solid-custom-${item.id}`}
                 title="Remove custom color background"
@@ -325,7 +334,7 @@ export function ImageCard({
 
           {hasSolidBgRemoved && onDownloadSolidBgRemoved && (
             <Button variant="secondary" size="sm" className="w-full h-8 text-xs"
-              onClick={() => onDownloadSolidBgRemoved(item)} data-testid={`btn-download-solid-no-bg-${item.id}`}>
+              onClick={(e) => { e.stopPropagation(); onDownloadSolidBgRemoved(item); }} data-testid={`btn-download-solid-no-bg-${item.id}`}>
               <Download className="w-3 h-3 mr-1.5" />
               PNG — solid no BG
             </Button>

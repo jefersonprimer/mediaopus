@@ -4,11 +4,13 @@ import { arrayMove } from '@dnd-kit/sortable';
 
 interface ImageStore {
   items: ImageItem[];
+  selectedItemId: string | null;
   addItems: (files: File[]) => Promise<void>;
   removeItem: (id: string) => void;
   clearItems: () => void;
   reorderItems: (activeId: string, overId: string) => void;
   updateItem: (id: string, updates: Partial<ImageItem>) => void;
+  setSelectedItemId: (id: string | null) => void;
   getProcessedItems: () => { blob: Blob; name: string }[];
   getBgRemovedItems: () => { blob: Blob; name: string }[];
   getSolidBgRemovedItems: () => { blob: Blob; name: string }[];
@@ -28,6 +30,7 @@ const getImageDimensions = (file: File): Promise<{ width: number; height: number
 
 export const useImageStore = create<ImageStore>((set, get) => ({
   items: [],
+  selectedItemId: null,
   addItems: async (files: File[]) => {
     const newItemsP = files.map(async (file) => {
       const { width, height } = await getImageDimensions(file);
@@ -50,7 +53,13 @@ export const useImageStore = create<ImageStore>((set, get) => ({
       };
     });
     const newItems = await Promise.all(newItemsP);
-    set((state) => ({ items: [...state.items, ...newItems] }));
+    set((state) => {
+      const updatedItems = [...state.items, ...newItems];
+      return {
+        items: updatedItems,
+        selectedItemId: state.selectedItemId || (newItems.length > 0 ? newItems[0].id : state.selectedItemId)
+      };
+    });
   },
   removeItem: (id: string) =>
     set((state) => {
@@ -60,7 +69,12 @@ export const useImageStore = create<ImageStore>((set, get) => ({
         if (item.bgRemovedUrl) URL.revokeObjectURL(item.bgRemovedUrl);
         if (item.solidBgRemovedUrl) URL.revokeObjectURL(item.solidBgRemovedUrl);
       }
-      return { items: state.items.filter((i) => i.id !== id) };
+      const filteredItems = state.items.filter((i) => i.id !== id);
+      let nextSelected = state.selectedItemId;
+      if (state.selectedItemId === id) {
+        nextSelected = filteredItems.length > 0 ? filteredItems[0].id : null;
+      }
+      return { items: filteredItems, selectedItemId: nextSelected };
     }),
   clearItems: () =>
     set((state) => {
@@ -69,7 +83,7 @@ export const useImageStore = create<ImageStore>((set, get) => ({
         if (item.bgRemovedUrl) URL.revokeObjectURL(item.bgRemovedUrl);
         if (item.solidBgRemovedUrl) URL.revokeObjectURL(item.solidBgRemovedUrl);
       });
-      return { items: [] };
+      return { items: [], selectedItemId: null };
     }),
   reorderItems: (activeId: string, overId: string) =>
     set((state) => {
@@ -81,6 +95,7 @@ export const useImageStore = create<ImageStore>((set, get) => ({
     set((state) => ({
       items: state.items.map((item) => (item.id === id ? { ...item, ...updates } : item)),
     })),
+  setSelectedItemId: (id: string | null) => set({ selectedItemId: id }),
   getProcessedItems: () => {
     const { items } = get();
     return items

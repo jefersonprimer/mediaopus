@@ -1,72 +1,107 @@
-import React from 'react';
-import { Header } from '../components/Header';
-import { UploadZone } from '../components/UploadZone';
-import { ImageGrid } from '../components/ImageGrid';
-import { ResultsPreview } from '../components/ResultsPreview';
-import { ControlsPanel } from '../components/ControlsPanel';
-import { useImageStore } from '../hooks/use-image-store';
-import { motion } from 'framer-motion';
+import React from "react";
+import { Header } from "../components/Header";
+import { UploadZone } from "../components/UploadZone";
+import { ImageGrid } from "../components/ImageGrid";
+import { ResultsPreview } from "../components/ResultsPreview";
+import { ControlsPanel } from "../components/ControlsPanel";
+import { useImageStore } from "../hooks/use-image-store";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eraser, Trash2 } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 export default function RemoveBg() {
-  const { items, addItems } = useImageStore();
+  const { items, addItems, clearItems, selectedItemId } = useImageStore();
 
   return (
     <div className="min-h-screen bg-background flex flex-col text-foreground selection:bg-primary/20">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full max-w-7xl mx-auto">
-          <div className="flex-1 flex flex-col gap-6 lg:gap-8 min-w-0">
-            <div className="space-y-2">
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                Background removal workspace
-              </h1>
-              <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
-                Remove solid or complex backgrounds locally in your browser. No uploads, no servers.
-              </p>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <UploadZone onUpload={addItems} className="py-6" />
-            </motion.div>
-
-            {items.length > 0 && (
-              <div className="flex flex-col gap-4 mt-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    Workspace ({items.length})
-                  </h2>
-                  <span className="text-sm text-muted-foreground">
-                    Drag to reorder
-                  </span>
-                </div>
-                <ImageGrid items={items} enableBgTools />
-                
-                {/* Processed Results Preview */}
-                <ResultsPreview items={items} />
-              </div>
-            )}
-
-            {items.length === 0 && (
-              <div className="flex-1 flex flex-col items-center justify-center min-h-[30vh] text-center p-8 rounded-2xl border border-dashed border-border/50 bg-muted/10 mt-4">
-                <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-                  <span className="text-2xl font-serif italic text-muted-foreground">It</span>
-                </div>
-                <h3 className="text-lg font-medium mb-1">Your workspace is empty</h3>
-                <p className="text-sm text-muted-foreground max-w-sm">
-                  Upload images to remove white/black/solid backgrounds or run AI background removal.
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col min-w-0 bg-muted/30 overflow-y-auto">
+            <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 space-y-8">
+              <div className="text-center space-y-3">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider"
+                >
+                  <Eraser className="w-3 h-3" />
+                  Local AI Processing
+                </motion.div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Background Removal
+                </h1>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                  Remove complex or solid backgrounds with high precision using local AI. Fast, private, and secure.
                 </p>
               </div>
-            )}
+
+              <div className="space-y-12">
+                <UploadZone
+                  onUpload={addItems}
+                  className="py-12 border-2 border-dashed border-primary/20 bg-background/50 backdrop-blur-sm rounded-3xl hover:border-primary/40 transition-all shadow-inner"
+                />
+
+                <AnimatePresence>
+                  {items.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="space-y-10"
+                    >
+                      {/* Processed Result Preview */}
+                      <div className="rounded-3xl border bg-background/50 backdrop-blur-sm p-4 md:p-6 shadow-sm">
+                        <ResultsPreview items={items} selectedItemId={selectedItemId} />
+                      </div>
+
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between border-b pb-4">
+                          <div className="space-y-1">
+                            <h2 className="text-2xl font-black tracking-tight">Your Workspace</h2>
+                            <p className="text-sm text-muted-foreground font-medium">
+                              Select an image to see the background removal preview
+                            </p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={clearItems} 
+                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Clear All
+                          </Button>
+                        </div>
+
+                        <div className="pb-12">
+                          <ImageGrid items={items} enableBgTools onAdd={addItems} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
 
-          <div className="w-full lg:w-80 xl:w-[340px] shrink-0 h-fit lg:sticky lg:top-24 mt-8 lg:mt-0">
-            <ControlsPanel mode="removebg" />
-          </div>
+          {/* Controls Sidebar */}
+          <AnimatePresence>
+            {items.length > 0 && (
+              <motion.aside
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="w-full lg:w-[360px] border-l bg-background flex flex-col shadow-2xl"
+              >
+                <div className="flex-1 overflow-y-auto">
+                  <ControlsPanel mode="removebg" />
+                </div>
+              </motion.aside>
+            )}
+          </AnimatePresence>
         </div>
       </main>
     </div>

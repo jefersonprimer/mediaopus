@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageCard } from './ImageCard';
+import { AddImagesButton } from './AddImagesButton';
 import { ImageItem } from '../lib/types';
 import { useImageStore } from '../hooks/use-image-store';
 import { useBackgroundRemoval } from '../hooks/use-background-removal';
@@ -25,10 +26,11 @@ import { useSolidBgOpts } from '../hooks/use-solid-bg-opts';
 interface ImageGridProps {
   items: ImageItem[];
   enableBgTools?: boolean;
+  onAdd?: (files: File[]) => void;
 }
 
-export function ImageGrid({ items, enableBgTools = true }: ImageGridProps) {
-  const { reorderItems, removeItem } = useImageStore();
+export function ImageGrid({ items, enableBgTools = true, onAdd }: ImageGridProps) {
+  const { reorderItems, removeItem, selectedItemId, setSelectedItemId } = useImageStore();
   const { removeBackground } = useBackgroundRemoval();
   const { removeSolidBg } = useSolidBgRemoval();
   const { opts: solidBgOpts } = useSolidBgOpts();
@@ -88,6 +90,15 @@ export function ImageGrid({ items, enableBgTools = true }: ImageGridProps) {
       >
         <SortableContext items={items.map((i) => i.id)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {onAdd && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AddImagesButton onUpload={onAdd} variant="grid" />
+              </motion.div>
+            )}
             <AnimatePresence>
               {items.map((item, index) => (
                 <motion.div
@@ -100,6 +111,8 @@ export function ImageGrid({ items, enableBgTools = true }: ImageGridProps) {
                 >
                   <ImageCard
                     item={item}
+                    isSelected={item.id === selectedItemId}
+                    onSelect={() => setSelectedItemId(item.id)}
                     onRemove={removeItem}
                     onDownload={handleDownload}
                     onRemoveBackground={enableBgTools ? removeBackground : undefined}

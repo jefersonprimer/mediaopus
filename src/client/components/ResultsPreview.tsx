@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 interface ResultsPreviewProps {
   items: ImageItem[];
+  selectedItemId: string | null;
 }
 
 const CHECKERBOARD = {
@@ -20,29 +21,30 @@ const CHECKERBOARD_DARK = {
   backgroundColor: '#1a1a1a',
 };
 
-export function ResultsPreview({ items }: ResultsPreviewProps) {
+export function ResultsPreview({ items, selectedItemId }: ResultsPreviewProps) {
   const processedItems = items.filter(
     (item) =>
-      (item.bgRemovalStatus === 'done' && item.bgRemovedUrl) ||
-      (item.solidBgStatus === 'done' && item.solidBgRemovedUrl)
+      item.id === selectedItemId &&
+      ((item.bgRemovalStatus === 'done' && item.bgRemovedUrl) ||
+      (item.solidBgStatus === 'done' && item.solidBgRemovedUrl))
   );
 
   if (processedItems.length === 0) return null;
 
   return (
-    <div className="mt-16 space-y-8 pb-12">
+    <div className="space-y-8">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
-          <h2 className="text-2xl font-bold tracking-tight">Processed Results</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Processed Result</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Your background-removed images are ready for download.
+          Your background-removed image is ready for download.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        {processedItems.map((item, index) => {
+        {processedItems.map((item) => {
           const resultUrl = item.bgRemovedUrl || item.solidBgRemovedUrl;
           const resultBlob = item.bgRemovedBlob || item.solidBgRemovedBlob;
           const type = item.bgRemovedUrl ? 'AI' : 'Solid';
@@ -64,7 +66,7 @@ export function ResultsPreview({ items }: ResultsPreviewProps) {
               key={item.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
+              transition={{ duration: 0.4 }}
             >
               <Card className="overflow-hidden border-2 border-primary/5 shadow-xl bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-0">
