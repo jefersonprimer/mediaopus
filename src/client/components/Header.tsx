@@ -8,6 +8,7 @@ import {
   Eraser,
   FileImage,
   Zap,
+  Scissors,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useLocation } from "wouter";
@@ -23,6 +24,7 @@ import logo from "/logo.png";
 const NAV = [
   { href: "/compress", label: "Compress", icon: Zap },
   { href: "/resize", label: "Resize", icon: ImageIcon },
+  { href: "/crop", label: "Crop", icon: Scissors },
   { href: "/removebg", label: "Remove BG", icon: Eraser },
   { href: "/convert", label: "Convert", icon: FileImage },
   { href: "/assets", label: "Assets", icon: Smartphone },
@@ -46,7 +48,7 @@ export function Header() {
               <img src={logo} alt="logo" className="w-12 h-12 object-contain" />
             </div>
           </div>
-          <div className="flex flex-col">
+          <div className="flex-col hidden md:flex">
             <span className="text-lg font-black tracking-tight leading-none bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 group-hover:from-primary group-hover:to-primary/70 transition-all flex items-center gap-1">
               MediaOpus
             </span>

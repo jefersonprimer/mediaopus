@@ -9,6 +9,7 @@ import Convert from "@/pages/Convert";
 import Compress from "@/pages/Compress";
 import Resize from "@/pages/Resize";
 import RemoveBg from "@/pages/RemoveBg";
+import Crop from "@/pages/Crop";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/resize" component={Resize} />
       <Route path="/compress" component={Compress} />
+      <Route path="/crop" component={Crop} />
       <Route path="/removebg" component={RemoveBg} />
       <Route path="/convert" component={Convert} />
       <Route path="/assets" component={AssetGenerator} />

@@ -1,11 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Header } from '../components/Header';
-import { Button } from '../components/ui/button';
-import { Slider } from '../components/ui/slider';
-import { Switch } from '../components/ui/switch';
-import { Label } from '../components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { Header } from "../components/Header";
+import { Button } from "../components/ui/button";
+import { Slider } from "../components/ui/slider";
+import { Switch } from "../components/ui/switch";
+import { Label } from "../components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import {
   exportIco,
   exportSvg,
@@ -15,8 +20,8 @@ import {
   SvgMode,
   ExportFormat,
   DEFAULT_FAVICON_ROUNDNESS,
-} from '../lib/export-formats';
-import { useToast } from '../hooks/use-toast';
+} from "../lib/export-formats";
+import { useToast } from "../hooks/use-toast";
 import {
   Upload,
   Loader2,
@@ -25,33 +30,41 @@ import {
   AlertTriangle,
   ArrowRight,
   ImageIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
 const CHECKERBOARD = {
-  backgroundImage: 'repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 0 0 / 12px 12px',
-  backgroundColor: '#fff',
+  backgroundImage:
+    "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 0 0 / 12px 12px",
+  backgroundColor: "#fff",
 };
 
 export default function Convert() {
   const { toast } = useToast();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourcePreview, setSourcePreview] = useState<string | null>(null);
-  const [faviconRoundness, setFaviconRoundness] = useState(DEFAULT_FAVICON_ROUNDNESS);
+  const [faviconRoundness, setFaviconRoundness] = useState(
+    DEFAULT_FAVICON_ROUNDNESS,
+  );
   const [applySquircle, setApplySquircle] = useState(true);
-  const [faviconPreviewUrl, setFaviconPreviewUrl] = useState<string | null>(null);
+  const [faviconPreviewUrl, setFaviconPreviewUrl] = useState<string | null>(
+    null,
+  );
   const [faviconPreviewLoading, setFaviconPreviewLoading] = useState(false);
   const faviconPreviewRef = useRef<string | null>(null);
 
   const [isExportingIco, setIsExportingIco] = useState(false);
   const [isExportingSvg, setIsExportingSvg] = useState(false);
   const [isExportingMasterPng, setIsExportingMasterPng] = useState(false);
-  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null);
-  const [svgMode, setSvgMode] = useState<SvgMode>('icon');
-  const [svgThreshold, setSvgThreshold] = useState(180);
-  const [svgSmoothness, setSvgSmoothness] = useState(20);
-  const [svgComplexity, setSvgComplexity] = useState<{ isComplex: boolean; uniqueColors: number } | null>(
+  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(
     null,
   );
+  const [svgMode, setSvgMode] = useState<SvgMode>("icon");
+  const [svgThreshold, setSvgThreshold] = useState(180);
+  const [svgSmoothness, setSvgSmoothness] = useState(20);
+  const [svgComplexity, setSvgComplexity] = useState<{
+    isComplex: boolean;
+    uniqueColors: number;
+  } | null>(null);
 
   const onDrop = useCallback(async (accepted: File[]) => {
     if (!accepted[0]) return;
@@ -114,7 +127,7 @@ export default function Convert() {
 
   const saveBlob = useCallback((blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.click();
@@ -126,14 +139,17 @@ export default function Convert() {
     setIsExportingIco(true);
     try {
       const blob = await exportIco(sourceFile, { roundness: faviconRoundness });
-      saveBlob(blob, 'favicon.ico');
-      toast({ title: 'ICO export ready', description: 'Your favicon.ico was downloaded.' });
+      saveBlob(blob, "favicon.ico");
+      toast({
+        title: "ICO export ready",
+        description: "Your favicon.ico was downloaded.",
+      });
     } catch (error) {
       console.error(error);
       toast({
-        title: 'ICO export failed',
-        description: 'Could not create ICO. Is the API running?',
-        variant: 'destructive',
+        title: "ICO export failed",
+        description: "Could not create ICO. Is the API running?",
+        variant: "destructive",
       });
     } finally {
       setIsExportingIco(false);
@@ -144,18 +160,20 @@ export default function Convert() {
     if (!sourceFile) return;
     setIsExportingMasterPng(true);
     try {
-      const blob = await exportFaviconMasterPng(sourceFile, { roundness: faviconRoundness });
-      saveBlob(blob, 'favicon-master.png');
+      const blob = await exportFaviconMasterPng(sourceFile, {
+        roundness: faviconRoundness,
+      });
+      saveBlob(blob, "favicon-master.png");
       toast({
-        title: 'PNG master ready',
-        description: '512×512 — same squircle settings as the preview.',
+        title: "PNG master ready",
+        description: "512×512 — same squircle settings as the preview.",
       });
     } catch (error) {
       console.error(error);
       toast({
-        title: 'PNG export failed',
-        description: 'Could not create favicon master.',
-        variant: 'destructive',
+        title: "PNG export failed",
+        description: "Could not create favicon master.",
+        variant: "destructive",
       });
     } finally {
       setIsExportingMasterPng(false);
@@ -171,22 +189,39 @@ export default function Convert() {
         threshold: svgThreshold,
         smoothness: svgSmoothness / 100,
       });
-      saveBlob(blob, 'vectorized.svg');
-      toast({ title: 'SVG export ready', description: 'Your vectorized SVG was downloaded.' });
+      saveBlob(blob, "vectorized.svg");
+      toast({
+        title: "SVG export ready",
+        description: "Your vectorized SVG was downloaded.",
+      });
     } catch (error) {
       console.error(error);
-      toast({ title: 'SVG export failed', description: 'Could not vectorize this image.', variant: 'destructive' });
+      toast({
+        title: "SVG export failed",
+        description: "Could not vectorize this image.",
+        variant: "destructive",
+      });
     } finally {
       setIsExportingSvg(false);
     }
-  }, [sourceFile, svgComplexity, svgMode, svgThreshold, svgSmoothness, saveBlob, toast]);
+  }, [
+    sourceFile,
+    svgComplexity,
+    svgMode,
+    svgThreshold,
+    svgSmoothness,
+    saveBlob,
+    toast,
+  ]);
 
   const handleExportGeneric = useCallback(
     async (format: ExportFormat) => {
       if (!sourceFile) return;
       setExportingFormat(format);
       try {
-        const options = applySquircle ? { roundness: faviconRoundness } : undefined;
+        const options = applySquircle
+          ? { roundness: faviconRoundness }
+          : undefined;
         const blob = await exportGeneric(sourceFile, format, options);
         saveBlob(blob, `converted.${format}`);
         toast({
@@ -196,9 +231,9 @@ export default function Convert() {
       } catch (error) {
         console.error(error);
         toast({
-          title: 'Export failed',
+          title: "Export failed",
           description: `Could not create ${format.toUpperCase()}.`,
-          variant: 'destructive',
+          variant: "destructive",
         });
       } finally {
         setExportingFormat(null);
@@ -209,7 +244,7 @@ export default function Convert() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/*': [] },
+    accept: { "image/*": [] },
     multiple: false,
   });
 
@@ -221,11 +256,11 @@ export default function Convert() {
         <div className="space-y-2 mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight flex items-center gap-3">
             <ImageIcon className="w-8 h-8 text-primary" />
-            Favicon &amp; export
+            Convert Image Format
           </h1>
           <p className="text-muted-foreground text-base max-w-2xl">
-            Build favicon-ready squircles, ICO, PNG master, and SVG traces. Adjust roundness and compare
-            to your original before downloading.
+            Build favicon-ready squircles, ICO, PNG master, and SVG traces.
+            Adjust roundness and compare to your original before downloading.
           </p>
         </div>
 
@@ -241,15 +276,24 @@ export default function Convert() {
               <div
                 {...getRootProps()}
                 className={`relative rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 overflow-hidden max-w-xl mx-auto
-                  ${isDragActive ? 'border-primary bg-primary/5 scale-[1.01]' : 'border-border hover:border-primary/50 hover:bg-muted/30'}`}
+                  ${isDragActive ? "border-primary bg-primary/5 scale-[1.01]" : "border-border hover:border-primary/50 hover:bg-muted/30"}`}
                 data-testid="convert-upload-zone"
               >
                 <input {...getInputProps()} />
                 {sourcePreview ? (
-                  <div className="relative aspect-square w-full max-h-72" style={CHECKERBOARD}>
-                    <img src={sourcePreview} alt="Source" className="w-full h-full object-contain p-6" />
+                  <div
+                    className="relative aspect-square w-full max-h-72"
+                    style={CHECKERBOARD}
+                  >
+                    <img
+                      src={sourcePreview}
+                      alt="Source"
+                      className="w-full h-full object-contain p-6"
+                    />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-background/60 backdrop-blur-sm">
-                      <p className="text-sm font-medium">Click or drop to replace</p>
+                      <p className="text-sm font-medium">
+                        Click or drop to replace
+                      </p>
                     </div>
                   </div>
                 ) : (
@@ -259,7 +303,9 @@ export default function Convert() {
                     </div>
                     <div>
                       <p className="text-sm font-medium">Drop your logo here</p>
-                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PNG, JPG, WEBP
+                      </p>
                     </div>
                   </div>
                 )}
@@ -277,11 +323,15 @@ export default function Convert() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="text-xs text-muted-foreground">Squircle / corner roundness</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    Squircle / corner roundness
+                  </Label>
                   <span className="text-xs font-mono text-muted-foreground tabular-nums">
                     {faviconRoundness}
                     {faviconRoundness === DEFAULT_FAVICON_ROUNDNESS ? (
-                      <span className="text-primary ml-1 font-sans">· default</span>
+                      <span className="text-primary ml-1 font-sans">
+                        · default
+                      </span>
                     ) : null}
                   </span>
                 </div>
@@ -301,32 +351,48 @@ export default function Convert() {
               </div>
 
               {!sourceFile ? (
-                <p className="text-sm text-muted-foreground text-center py-6">Upload an image to see the comparison.</p>
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  Upload an image to see the comparison.
+                </p>
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Original</span>
-                        <span className="text-[10px] text-muted-foreground">Unmodified file</span>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          Original
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          Unmodified file
+                        </span>
                       </div>
                       <div
                         className="relative aspect-square w-full max-w-[220px] mx-auto rounded-xl border border-border overflow-hidden shadow-sm"
                         style={CHECKERBOARD}
                       >
-                        <img src={sourcePreview ?? ''} alt="" className="w-full h-full object-contain p-4" />
+                        <img
+                          src={sourcePreview ?? ""}
+                          alt=""
+                          className="w-full h-full object-contain p-4"
+                        />
                       </div>
                     </div>
 
                     <div className="hidden md:flex flex-col items-center justify-center text-muted-foreground py-8">
                       <ArrowRight className="w-6 h-6 shrink-0" />
-                      <span className="text-[10px] mt-2 text-center max-w-[5rem] leading-tight">Slider reshapes this side only</span>
+                      <span className="text-[10px] mt-2 text-center max-w-[5rem] leading-tight">
+                        Slider reshapes this side only
+                      </span>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-primary">Converted</span>
-                        <span className="text-[10px] text-muted-foreground">ICO / PNG use this</span>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+                          Converted
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          ICO / PNG use this
+                        </span>
                       </div>
                       <div
                         className="relative aspect-square w-full max-w-[220px] mx-auto rounded-xl border border-primary/30 overflow-hidden shadow-sm bg-muted/30"
@@ -346,7 +412,9 @@ export default function Convert() {
                         )}
                       </div>
                       <p className="text-[10px] text-muted-foreground text-center max-w-[240px] mx-auto leading-snug">
-                        Adds light plate, padding, squircle clip, and Lanczos resize for small sizes. Only this column reacts to roundness.
+                        Adds light plate, padding, squircle clip, and Lanczos
+                        resize for small sizes. Only this column reacts to
+                        roundness.
                       </p>
                     </div>
                   </div>
@@ -366,11 +434,13 @@ export default function Convert() {
                               src={faviconPreviewUrl}
                               alt=""
                               className="w-full h-full object-contain"
-                              style={{ imageRendering: 'pixelated' }}
+                              style={{ imageRendering: "pixelated" }}
                             />
                           ) : null}
                         </div>
-                        <span className="text-[9px] text-muted-foreground">32×32</span>
+                        <span className="text-[9px] text-muted-foreground">
+                          32×32
+                        </span>
                       </div>
                       <div className="flex flex-col items-center gap-1.5">
                         <div
@@ -382,11 +452,13 @@ export default function Convert() {
                               src={faviconPreviewUrl}
                               alt=""
                               className="w-full h-full object-contain"
-                              style={{ imageRendering: 'pixelated' }}
+                              style={{ imageRendering: "pixelated" }}
                             />
                           ) : null}
                         </div>
-                        <span className="text-[9px] text-muted-foreground">16×16</span>
+                        <span className="text-[9px] text-muted-foreground">
+                          16×16
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -412,7 +484,7 @@ export default function Convert() {
                   title="favicon.ico (multi-size)"
                 >
                   <FileType2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                  {isExportingIco ? '…' : 'favicon.ico'}
+                  {isExportingIco ? "…" : "favicon.ico"}
                 </Button>
                 <Button
                   variant="outline"
@@ -422,17 +494,21 @@ export default function Convert() {
                   title="512×512 PNG master"
                 >
                   <FileImage className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                  {isExportingMasterPng ? '…' : 'PNG 512'}
+                  {isExportingMasterPng ? "…" : "PNG 512"}
                 </Button>
                 <Button
                   variant="outline"
                   className="text-xs h-11"
                   onClick={handleExportSvg}
-                  disabled={!sourceFile || isExportingSvg || Boolean(svgComplexity?.isComplex)}
+                  disabled={
+                    !sourceFile ||
+                    isExportingSvg ||
+                    Boolean(svgComplexity?.isComplex)
+                  }
                   title="Potrace SVG"
                 >
                   <FileType2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                  {isExportingSvg ? '…' : 'SVG trace'}
+                  {isExportingSvg ? "…" : "SVG trace"}
                 </Button>
               </div>
 
@@ -441,21 +517,23 @@ export default function Convert() {
                   Standard formats (with squircle)
                 </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {(['jpg', 'png', 'webp', 'gif', 'bmp'] as ExportFormat[]).map((format) => (
-                    <Button
-                      key={format}
-                      variant="outline"
-                      className="text-[10px] h-9 px-2"
-                      onClick={() => handleExportGeneric(format)}
-                      disabled={!sourceFile || exportingFormat !== null}
-                    >
-                      {exportingFormat === format ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        format.toUpperCase()
-                      )}
-                    </Button>
-                  ))}
+                  {(["jpg", "png", "webp", "gif", "bmp"] as ExportFormat[]).map(
+                    (format) => (
+                      <Button
+                        key={format}
+                        variant="outline"
+                        className="text-[10px] h-9 px-2"
+                        onClick={() => handleExportGeneric(format)}
+                        disabled={!sourceFile || exportingFormat !== null}
+                      >
+                        {exportingFormat === format ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          format.toUpperCase()
+                        )}
+                      </Button>
+                    ),
+                  )}
                 </div>
               </div>
 
@@ -478,40 +556,61 @@ export default function Convert() {
               {svgComplexity?.isComplex && (
                 <div className="text-xs rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 px-3 py-2 flex items-start gap-2">
                   <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <span>SVG works best for simple logos (~{svgComplexity.uniqueColors} colors detected).</span>
+                  <span>
+                    SVG works best for simple logos (~
+                    {svgComplexity.uniqueColors} colors detected).
+                  </span>
                 </div>
               )}
 
               <div className="space-y-3 pt-1">
-                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">SVG trace settings</Label>
+                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  SVG trace settings
+                </Label>
                 <div className="grid grid-cols-3 gap-2">
-                  {(['logo', 'icon', 'detail'] as SvgMode[]).map((mode) => (
+                  {(["logo", "icon", "detail"] as SvgMode[]).map((mode) => (
                     <button
                       key={mode}
                       type="button"
                       onClick={() => setSvgMode(mode)}
                       className={`rounded-lg px-2 py-1.5 text-[11px] font-medium border transition-all ${
                         svgMode === mode
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border bg-muted/20 text-muted-foreground hover:border-primary/40'
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40"
                       }`}
                     >
-                      {mode === 'logo' ? 'Logo' : mode === 'icon' ? 'Icon' : 'High detail'}
+                      {mode === "logo"
+                        ? "Logo"
+                        : mode === "icon"
+                          ? "Icon"
+                          : "High detail"}
                     </button>
                   ))}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <Label className="text-xs text-muted-foreground">Threshold</Label>
+                      <Label className="text-xs text-muted-foreground">
+                        Threshold
+                      </Label>
                       <span className="text-xs font-mono">{svgThreshold}</span>
                     </div>
-                    <Slider value={[svgThreshold]} onValueChange={([v]) => setSvgThreshold(v)} min={0} max={255} step={1} />
+                    <Slider
+                      value={[svgThreshold]}
+                      onValueChange={([v]) => setSvgThreshold(v)}
+                      min={0}
+                      max={255}
+                      step={1}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex justify-between">
-                      <Label className="text-xs text-muted-foreground">Smoothness</Label>
-                      <span className="text-xs font-mono">{svgSmoothness}%</span>
+                      <Label className="text-xs text-muted-foreground">
+                        Smoothness
+                      </Label>
+                      <span className="text-xs font-mono">
+                        {svgSmoothness}%
+                      </span>
                     </div>
                     <Slider
                       value={[svgSmoothness]}
