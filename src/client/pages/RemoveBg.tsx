@@ -2,6 +2,7 @@ import React from 'react';
 import { Header } from '../components/Header';
 import { UploadZone } from '../components/UploadZone';
 import { ImageGrid } from '../components/ImageGrid';
+import { ResultsPreview } from '../components/ResultsPreview';
 import { ControlsPanel } from '../components/ControlsPanel';
 import { useImageStore } from '../hooks/use-image-store';
 import { motion } from 'framer-motion';
@@ -44,6 +45,9 @@ export default function RemoveBg() {
                   </span>
                 </div>
                 <ImageGrid items={items} enableBgTools />
+                
+                {/* Processed Results Preview */}
+                <ResultsPreview items={items} />
               </div>
             )}
 
