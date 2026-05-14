@@ -34,11 +34,41 @@ import { ScrollArea } from "../components/ui/scroll-area";
 import { cn } from "../lib/utils";
 import { UploadZone } from "@/components/UploadZone";
 
-const CHECKERBOARD = {
+/** Transparency grid only; base fill comes from `bg-muted` on the container. */
+const CHECKERBOARD_GRID = {
   backgroundImage:
     "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 0 0 / 12px 12px",
-  backgroundColor: "#fff",
 };
+
+/** Stronger grid so transparent mask corners read against the near-white favicon plate. */
+const CHECKERBOARD_ALPHA_LIGHT = {
+  backgroundImage:
+    "repeating-conic-gradient(#9ca3af 0% 25%, #e5e7eb 0% 50%) 0 0 / 14px 14px",
+  backgroundColor: "#d1d5db",
+};
+
+const CHECKERBOARD_ALPHA_DARK = {
+  backgroundImage:
+    "repeating-conic-gradient(#525252 0% 25%, #262626 0% 50%) 0 0 / 14px 14px",
+  backgroundColor: "#171717",
+};
+
+function MaskPreviewBackdrop() {
+  return (
+    <>
+      <div
+        className="absolute inset-0 dark:hidden"
+        style={CHECKERBOARD_ALPHA_LIGHT}
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 hidden dark:block"
+        style={CHECKERBOARD_ALPHA_DARK}
+        aria-hidden
+      />
+    </>
+  );
+}
 
 export default function Convert() {
   const { toast } = useToast();
@@ -114,7 +144,7 @@ export default function Convert() {
           });
         })
         .finally(() => setFaviconPreviewLoading(false));
-    }, 380);
+    }, 90);
 
     return () => window.clearTimeout(id);
   }, [sourceFile, faviconRoundness]);
@@ -273,8 +303,8 @@ export default function Convert() {
                       Image Converter
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                      Build favicon-ready squircles, ICO, PNG master, and SVG
-                      traces. 100% private and browser-native.
+                      Build favicon-ready rounded masks, ICO, PNG master, and
+                      SVG traces. 100% private and browser-native.
                     </p>
                   </div>
 
@@ -302,7 +332,8 @@ export default function Convert() {
                               Compare & Tune
                             </h2>
                             <p className="text-sm text-muted-foreground font-medium">
-                              Adjust squircle roundness and compare results
+                              Adjust corner roundness; full view and corner zoom
+                              below
                             </p>
                           </div>
                           <Button
@@ -324,13 +355,13 @@ export default function Convert() {
                               </span>
                             </div>
                             <div
-                              className="relative aspect-square w-full max-w-[280px] mx-auto rounded-2xl border-2 overflow-hidden shadow-xl"
-                              style={CHECKERBOARD}
+                              className="relative aspect-square w-full max-w-[280px] mx-auto overflow-hidden bg-muted"
+                              style={CHECKERBOARD_GRID}
                             >
                               <img
                                 src={sourcePreview ?? ""}
                                 alt=""
-                                className="w-full h-full object-contain p-6"
+                                className="w-full h-full object-contain"
                               />
                             </div>
                             <p className="text-[10px] text-muted-foreground font-bold">
@@ -348,26 +379,67 @@ export default function Convert() {
                                 Converted
                               </span>
                             </div>
-                            <div
-                              className="relative aspect-square w-full max-w-[280px] mx-auto rounded-2xl border-2 border-primary/30 overflow-hidden shadow-xl bg-background"
-                              style={CHECKERBOARD}
-                            >
+                            <div className="relative aspect-square w-full max-w-[280px] mx-auto overflow-hidden rounded-lg ring-2 ring-primary/30 ring-offset-2 ring-offset-background shadow-sm">
+                              <MaskPreviewBackdrop />
                               {faviconPreviewUrl ? (
                                 <img
                                   src={faviconPreviewUrl}
                                   alt="Converted favicon preview"
-                                  className="w-full h-full object-contain p-2"
+                                  className="relative z-10 w-full h-full object-contain"
                                 />
                               ) : null}
                               {faviconPreviewLoading && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+                                <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-sm">
                                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                 </div>
                               )}
                             </div>
                             <p className="text-[10px] text-primary font-bold">
-                              SQUIRCLE PREVIEW
+                              MASK PREVIEW (512×512)
                             </p>
+                            <p className="text-[10px] text-muted-foreground max-w-[260px] mx-auto leading-snug">
+                              The grid only shows through transparent pixels
+                              (mask corners and any letterboxing around the
+                              image).
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-end justify-center gap-10 md:gap-16 pt-2">
+                          <div className="space-y-2 text-center">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                              Corner zoom — original
+                            </p>
+                            {sourcePreview ? (
+                              <div
+                                className="relative h-16 w-16 mx-auto overflow-hidden bg-muted"
+                                style={CHECKERBOARD_GRID}
+                              >
+                                <img
+                                  src={sourcePreview}
+                                  alt=""
+                                  draggable={false}
+                                  className="pointer-events-none absolute left-0 top-0 h-[220%] w-[220%] max-w-none object-cover object-left-top"
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="space-y-2 text-center">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-primary/80">
+                              Corner zoom — export
+                            </p>
+                            {faviconPreviewUrl ? (
+                              <div className="relative h-16 w-16 mx-auto overflow-hidden rounded-md ring-2 ring-primary/25">
+                                <MaskPreviewBackdrop />
+                                <img
+                                  src={faviconPreviewUrl}
+                                  alt=""
+                                  draggable={false}
+                                  className="pointer-events-none absolute left-0 top-0 z-10 h-[220%] w-[220%] max-w-none object-cover object-left-top"
+                                  style={{ imageRendering: "pixelated" }}
+                                />
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -379,15 +451,13 @@ export default function Convert() {
                           </span>
                           <div className="flex items-end justify-center gap-12">
                             <div className="flex flex-col items-center gap-2">
-                              <div
-                                className="w-10 h-10 rounded border-2 overflow-hidden shadow-sm"
-                                style={CHECKERBOARD}
-                              >
+                              <div className="relative w-10 h-10 rounded border-2 border-primary/25 overflow-hidden shadow-sm">
+                                <MaskPreviewBackdrop />
                                 {faviconPreviewUrl ? (
                                   <img
                                     src={faviconPreviewUrl}
                                     alt=""
-                                    className="w-full h-full object-contain"
+                                    className="relative z-10 w-full h-full object-contain"
                                     style={{ imageRendering: "pixelated" }}
                                   />
                                 ) : null}
@@ -397,15 +467,13 @@ export default function Convert() {
                               </span>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                              <div
-                                className="w-6 h-6 rounded border-2 overflow-hidden shadow-sm"
-                                style={CHECKERBOARD}
-                              >
+                              <div className="relative w-6 h-6 rounded border-2 border-primary/25 overflow-hidden shadow-sm">
+                                <MaskPreviewBackdrop />
                                 {faviconPreviewUrl ? (
                                   <img
                                     src={faviconPreviewUrl}
                                     alt=""
-                                    className="w-full h-full object-contain"
+                                    className="relative z-10 w-full h-full object-contain"
                                     style={{ imageRendering: "pixelated" }}
                                   />
                                 ) : null}
@@ -446,7 +514,7 @@ export default function Convert() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                          Squircle Roundness
+                          Corner roundness
                         </Label>
                         <span className="text-xs font-mono font-bold bg-muted px-2 py-1 rounded">
                           {faviconRoundness}%
@@ -460,8 +528,8 @@ export default function Convert() {
                         step={1}
                       />
                       <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                        <span>Square</span>
-                        <span>Soft</span>
+                        <span>Sharp corners</span>
+                        <span>Round corners</span>
                       </div>
                     </div>
 
@@ -513,7 +581,7 @@ export default function Convert() {
                               PNG Master
                             </span>
                             <span className="text-[10px] text-muted-foreground text-left">
-                              512×512 Squircle PNG
+                              512×512 rounded-mask PNG
                             </span>
                           </div>
                         </Button>
@@ -530,7 +598,7 @@ export default function Convert() {
                         </Label>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] text-muted-foreground font-bold">
-                            SQUIRCLE
+                            Mask
                           </span>
                           <Switch
                             checked={applySquircle}

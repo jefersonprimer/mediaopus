@@ -41,11 +41,11 @@ async function requestBinaryExport(
   return response.blob();
 }
 
-/** Matches server default squircle look (roundness slider midpoint). */
+/** Matches server default corner rounding (slider midpoint). */
 export const DEFAULT_FAVICON_ROUNDNESS = 62;
 
 export interface FaviconExportOptions {
-  /** 0 = squarer silhouette, 100 = softer squircle (default 62). */
+  /** 0 = sharp, nearly full-bleed square; 100 = strong corner rounding + slight inset (default 62). */
   roundness?: number;
 }
 
@@ -63,7 +63,7 @@ export async function exportIco(
   return requestBinaryExport("/api/convert/ico", sourceFile, fields);
 }
 
-/** 512×512 rounded, padded favicon-ready PNG (same look as ICO layers, best for previews / handoff). */
+/** 512×512 rounded-mask PNG (same look as ICO layers). */
 export async function exportFaviconMasterPng(
   sourceFile: File,
   opts?: FaviconExportOptions,
